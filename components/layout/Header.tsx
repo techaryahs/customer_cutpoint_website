@@ -166,8 +166,8 @@ export default function Header() {
   const isHome = pathname === '/';
 
   const headerClasses = `fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isHome && !isScrolled
-      ? 'bg-transparent py-4 border-transparent'
-      : 'bg-sand/95 backdrop-blur-md border-b border-borderSoft shadow-sm py-3'
+    ? 'bg-transparent py-4 border-transparent'
+    : 'bg-sand/95 backdrop-blur-md border-b border-borderSoft shadow-sm py-3'
     }`;
 
   const linkBaseClass = `text-sm font-bold uppercase tracking-wide transition-all duration-200 relative pb-1 ${isHome && !isScrolled ? 'text-cocoa hover:text-goldDark' : 'text-cocoa hover:text-goldDark'
@@ -190,8 +190,8 @@ export default function Header() {
             <button
               onClick={() => setIsLocationOpen(!isLocationOpen)}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${isHome && !isScrolled
-                  ? 'bg-white/80 hover:bg-white text-cocoa shadow-sm'
-                  : 'bg-white border border-transparent hover:border-gold/30 text-cocoa shadow-sm'
+                ? 'bg-white/80 hover:bg-white text-cocoa shadow-sm'
+                : 'bg-white border border-transparent hover:border-gold/30 text-cocoa shadow-sm'
                 }`}>
               <MapPin className="w-4 h-4 text-goldDark" />
               <span className="truncate max-w-[100px]">{location}</span>
@@ -261,8 +261,8 @@ export default function Header() {
           <Link
             href={`/search?&loc=${encodeURIComponent(location)}`}
             className={`hidden lg:flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold shadow-soft transition-transform hover:scale-105 active:scale-95 ${isHome && !isScrolled
-                ? 'bg-cocoa text-sand hover:bg-taupe'
-                : 'bg-gradient-to-r from-gold to-goldDark text-white hover:brightness-110'
+              ? 'bg-cocoa text-sand hover:bg-taupe'
+              : 'bg-gradient-to-r from-gold to-goldDark text-white hover:brightness-110'
               }`}
           >
             <CalendarCheck className="w-4 h-4" />
@@ -281,8 +281,8 @@ export default function Header() {
                   className="flex items-center gap-2 focus:outline-none"
                 >
                   <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm border-2 transition-all ${isHome && !isScrolled
-                      ? 'bg-white text-cocoa border-transparent hover:border-cocoa'
-                      : 'bg-cocoa text-sand border-transparent hover:border-gold'
+                    ? 'bg-white text-cocoa border-transparent hover:border-cocoa'
+                    : 'bg-cocoa text-sand border-transparent hover:border-gold'
                     }`}>
                     {user.name.charAt(0).toUpperCase()}
                   </div>
@@ -302,25 +302,26 @@ export default function Header() {
                     </p>
                   </div>
 
-                  {/* MY PROFILE */}
+                  {/* DASHBOARD */}
                   <Link
-                    href="/customer/profile"
+                    href="/customer"
                     className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                     onClick={() => setIsProfileOpen(false)}
                   >
-                    <User className="w-4 h-4" />
-                    My Profile
+                    <LayoutGrid className="w-4 h-4" />
+                    Dashboard
                   </Link>
 
-                  {/* MY BOOKINGS */}
+                  {/* MY APPOINTMENTS */}
                   <Link
-                    href="/customer/bookings"
+                    href="/customer/appointment"
                     className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                     onClick={() => setIsProfileOpen(false)}
                   >
-                    <ShoppingBag className="w-4 h-4" />
-                    My Bookings
+                    <CalendarCheck className="w-4 h-4" />
+                    My Appointments
                   </Link>
+
 
                   {/* SIGN OUT */}
                   <button

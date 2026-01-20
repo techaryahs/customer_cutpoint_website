@@ -2,6 +2,47 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import {
+  User,
+  CalendarCheck,
+  Wallet,
+  Heart,
+  ShoppingBag,
+  Settings,
+} from 'lucide-react';
+
+const menu = [
+  {
+    name: 'Profile',
+    href: '/customer/profile',
+    icon: User,
+  },
+  {
+    name: 'Appointments',
+    href: '/customer/appointment', // ✅ FIXED
+    icon: CalendarCheck,
+  },
+  {
+    name: 'Wallet',
+    href: '/customer/wallet',
+    icon: Wallet,
+  },
+  {
+    name: 'Favorites',
+    href: '/customer/favorites',
+    icon: Heart,
+  },
+  {
+    name: 'Orders',
+    href: '/customer/orders',
+    icon: ShoppingBag,
+  },
+  {
+    name: 'Settings',
+    href: '/customer/settings',
+    icon: Settings,
+  },
+];
 
 export default function CustomerLayout({
   children,
@@ -11,53 +52,38 @@ export default function CustomerLayout({
   const pathname = usePathname();
 
   return (
-    <div className="max-w-6xl mt-10 mx-auto px-6 py-8">
-      {/* CUSTOMER TOP NAV */}
-      <nav className="flex gap-6 mb-8 border-b border-gray-200 pb-4 text-sm font-medium">
-        <NavItem href="/customer" active={pathname === '/customer'}>
-          Overview
-        </NavItem>
+    <div className="min-h-screen mt-10 flex bg-[#fafafa]">
+      {/* SIDEBAR */}
+      <aside className="w-64 bg-white border-r border-gray-200 p-6">
+        <h2 className="text-xl font-bold text-[#4a3728] mb-8">
+          Aryahs Tech
+        </h2>
 
-        <NavItem
-          href="/customer/appointments"
-          active={pathname === '/customer/appointments'}
-        >
-          Appointments
-        </NavItem>
+        <nav className="space-y-1">
+          {menu.map((item) => {
+            const active = pathname.startsWith(item.href);
+            const Icon = item.icon;
 
-        <NavItem
-          href="/customer/profile"
-          active={pathname === '/customer/profile'}
-        >
-          Profile
-        </NavItem>
-      </nav>
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition ${
+                  active
+                    ? 'bg-[#4a3728] text-white'
+                    : 'text-[#4a3728] hover:bg-[#FAF7F4]'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                {item.name}
+              </Link>
+            );
+          })}
+        </nav>
+      </aside>
 
-      {/* PAGE CONTENT */}
-      <main>{children}</main>
+      {/* MAIN CONTENT */}
+      <main className="flex-1 p-10">{children}</main>
     </div>
-  );
-}
-
-function NavItem({
-  href,
-  active,
-  children,
-}: {
-  href: string;
-  active: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      className={`px-4 py-2 rounded-lg transition ${
-        active
-          ? 'bg-[#4a3728] text-white'
-          : 'text-[#4a3728] hover:bg-[#FAF7F4]'
-      }`}
-    >
-      {children}
-    </Link>
   );
 }
