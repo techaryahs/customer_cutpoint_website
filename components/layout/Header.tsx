@@ -181,7 +181,7 @@ export default function Header() {
         <div className="flex items-center gap-6">
           <Link href="/" className="group flex-shrink-0 z-50">
             <span className="text-2xl font-serif font-bold tracking-wide text-cocoa">
-              CUT <span className="text-gold group-hover:text-goldDark transition-colors">POINT</span>
+              Glow <span className="text-gold group-hover:text-goldDark transition-colors">Biz</span>
             </span>
           </Link>
 
