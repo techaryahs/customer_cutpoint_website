@@ -1,9 +1,10 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { MapPin, Star, ExternalLink } from 'lucide-react';
+import { MapPin, Star, ExternalLink, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
+import axios from 'axios';
 
 type Service = {
   serviceId?: string;
@@ -43,6 +44,51 @@ function getPriceTierFromServices(services?: Service[]): string {
 
 export default function SalonCard({ kind, item }: SalonCardProps) {
   const router = useRouter();
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [loadingFav, setLoadingFav] = useState(false);
+
+  useEffect(() => {
+    const checkFav = async () => {
+      const token = localStorage.getItem('salon_token');
+      const userData = localStorage.getItem('salon_user');
+      if (!token || !userData) return;
+      try {
+        const user = JSON.parse(userData);
+        const res = await axios.get(`${BACKEND_URL}/customer/favorites/${user.uid}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setIsFavorite(res.data.some((f: any) => f.id === item.id));
+      } catch (err) {
+        console.error("Check favorite error", err);
+      }
+    };
+    checkFav();
+  }, [item.id]);
+
+  const toggleFavorite = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const token = localStorage.getItem('salon_token');
+    const userData = localStorage.getItem('salon_user');
+
+    if (!token || !userData) {
+      alert("Please login to save favorites");
+      return;
+    }
+
+    setLoadingFav(true);
+    try {
+      const user = JSON.parse(userData);
+      const res = await axios.post(`${BACKEND_URL}/customer/favorites/toggle`, 
+        { type: kind, placeId: item.id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setIsFavorite(res.data.isFavorite);
+    } catch (err) {
+      console.error("Toggle favorite error", err);
+    } finally {
+      setLoadingFav(false);
+    }
+  };
 
   const priceTier = useMemo(() => getPriceTierFromServices(item.services), [item.services]);
   const locationLabel = [item.branch, item.address].filter(Boolean).join(', ');
@@ -79,10 +125,18 @@ export default function SalonCard({ kind, item }: SalonCardProps) {
           </span>
         </div>
 
-        <div className="absolute top-3 right-3 h-fit">
-          <div className="bg-white/80 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1 shadow-lg border border-white/20">
-            <Star className="w-2.5 h-2.5 text-green-600 fill-green-600" />
-            <span className="text-[10px] font-black text-green-900">
+        <div className="absolute top-3 right-3 flex items-center gap-1.5">
+          <button 
+            onClick={toggleFavorite}
+            disabled={loadingFav}
+            className="bg-white/90 backdrop-blur-md p-2 rounded-xl shadow-lg border border-white/20 hover:scale-110 active:scale-95 transition-all group/heart z-10"
+          >
+            <Heart className={`w-3.5 h-3.5 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-cocoa/40 group-hover/heart:text-red-500'} transition-colors`} />
+          </button>
+
+          <div className="bg-green-600/90 backdrop-blur-md px-2 py-1.5 rounded-xl flex items-center gap-1 shadow-lg border border-white/10">
+            <Star className="w-2.5 h-2.5 text-white fill-current" />
+            <span className="text-[10px] font-black text-white leading-none">
               {typeof item.rating === 'number' ? item.rating.toFixed(1) : '5.0'}
             </span>
           </div>

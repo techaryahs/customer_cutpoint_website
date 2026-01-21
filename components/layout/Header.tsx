@@ -419,7 +419,7 @@ export default function Header() {
           {user ? (
             <div className="relative" ref={profileRef}>
               <div className="flex items-center gap-3">
-                <Link href="/saved" className="hidden md:block hover:text-red-500 transition-colors text-cocoa" title="Saved Items">
+                <Link href="/customer/favorites" className="hidden md:block hover:text-red-500 transition-colors text-cocoa" title="Saved Items">
                   <Heart className="w-5 h-5" />
                 </Link>
                 <button

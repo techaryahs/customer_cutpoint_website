@@ -1,96 +1,113 @@
 'use client';
 
-const favorites = [
-  {
-    id: 'SAL001',
-    name: 'Luxury Touch Salon',
-    location: 'Bandra West, Mumbai',
-    rating: 4.8,
-    image:
-      'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=1200&auto=format&fit=crop',
-  },
-  {
-    id: 'SAL002',
-    name: 'You Do You Hair Studio',
-    location: 'Indiranagar, Bangalore',
-    rating: 4.6,
-    image:
-      'https://images.unsplash.com/photo-1580618672591-eb180b1a973f?q=80&w=1200&auto=format&fit=crop',
-  },
-  {
-    id: 'SAL003',
-    name: 'Glow Beauty Lounge',
-    location: 'Koregaon Park, Pune',
-    rating: 4.7,
-    image:
-      'https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=1200&auto=format&fit=crop',
-  },
-];
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import axios from 'axios';
+import { Heart, Search, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import SalonCard from '@/components/salon/SalonCard';
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export default function CustomerFavoritesPage() {
-  return (
-    <section className="max-w-6xl">
-      {/* PAGE HEADER */}
-      <div className="flex items-center justify-between mb-10">
-        <h1 className="text-3xl font-semibold text-[#4a3728]">
-          Favorites
-        </h1>
+  const [favorites, setFavorites] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-        <button className="px-6 py-3 rounded-xl bg-[#4a3728] text-white font-semibold hover:opacity-90">
-          Explore salons
-        </button>
+  const fetchFavorites = async () => {
+    const token = localStorage.getItem('salon_token');
+    const userData = localStorage.getItem('salon_user');
+    if (!token || !userData) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const user = JSON.parse(userData);
+      const res = await axios.get(`${BACKEND_URL}/customer/favorites/${user.uid}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setFavorites(res.data);
+    } catch (err) {
+      console.error("Fetch favorites error", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFavorites();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <div className="w-12 h-12 border-4 border-goldDark border-t-transparent rounded-full animate-spin" />
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-taupe/40">Loading your favorites...</p>
+      </div>
+    );
+  }
+
+  return (
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* PAGE HEADER */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.3em] text-gold">
+            <Heart className="w-3 h-3 fill-current" /> Saved Experiences
+          </div>
+          <h1 className="text-4xl md:text-5xl font-serif font-bold text-cocoa tracking-tight">
+            Your Favorites
+          </h1>
+          <p className="text-sm text-taupe font-medium opacity-60">
+            Keep track of the places that make you feel your best.
+          </p>
+        </div>
+
+        <Link href="/search">
+          <button className="flex items-center gap-3 bg-cocoa text-white px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-goldDark transition-all shadow-xl active:scale-95">
+            Discover More <Search className="w-4 h-4" />
+          </button>
+        </Link>
       </div>
 
       {/* FAVORITES GRID */}
-      {favorites.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-          {favorites.map((salon) => (
-            <div
-              key={salon.id}
-              className="bg-white rounded-3xl border border-gray-200 overflow-hidden hover:shadow-xl transition"
-            >
-              {/* IMAGE */}
-              <div className="h-44 w-full overflow-hidden">
-                <img
-                  src={salon.image}
-                  alt={salon.name}
-                  className="h-full w-full object-cover hover:scale-105 transition-transform duration-500"
-                />
+      <AnimatePresence mode="wait">
+        {favorites.length > 0 ? (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
+          >
+            {favorites.map((item) => (
+              <SalonCard key={item.id} kind={item.type} item={item} />
+            ))}
+          </motion.div>
+        ) : (
+          /* EMPTY STATE */
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white p-12 md:p-20 rounded-[3rem] border border-borderSoft text-center shadow-soft relative overflow-hidden"
+          >
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-linen rounded-full blur-3xl opacity-50 -mt-32" />
+            
+            <div className="relative z-10 flex flex-col items-center">
+              <div className="w-20 h-20 bg-linen rounded-3xl flex items-center justify-center mb-8 rotate-12">
+                <Heart className="w-10 h-10 text-taupe/20" />
               </div>
-
-              {/* CONTENT */}
-              <div className="p-6">
-                <h3 className="text-xl font-semibold text-[#4a3728] mb-1">
-                  {salon.name}
-                </h3>
-                <p className="text-sm text-[#7a6a5e] mb-4">
-                  {salon.location}
-                </p>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-green-700 bg-green-100 px-3 py-1 rounded-full">
-                    ★ {salon.rating}
-                  </span>
-
-                  <button className="text-sm font-semibold text-[#4a3728] hover:underline">
-                    Book now
-                  </button>
-                </div>
-              </div>
+              <h3 className="text-2xl font-serif font-bold text-cocoa mb-3">No favorites yet</h3>
+              <p className="text-sm text-taupe font-medium mb-10 opacity-70 max-w-xs mx-auto">
+                Explore our curated selection of salons and spas to find your next grooming destination.
+              </p>
+              <Link href="/search">
+                <button className="flex items-center gap-3 border-2 border-cocoa text-cocoa px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-cocoa hover:text-white transition-all">
+                  Start Exploring <ChevronRight className="w-4 h-4" />
+                </button>
+              </Link>
             </div>
-          ))}
-        </div>
-      ) : (
-        /* EMPTY STATE */
-        <div className="bg-white p-16 rounded-3xl border border-gray-200 text-center">
-          <p className="text-[#7a6a5e] mb-6 text-lg">
-            You haven’t added any salons to favorites yet
-          </p>
-          <button className="px-6 py-3 rounded-xl bg-[#4a3728] text-white font-semibold">
-            Explore salons
-          </button>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }
