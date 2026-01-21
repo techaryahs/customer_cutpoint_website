@@ -1,17 +1,33 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { 
-  ChevronRight, 
-  MapPin, 
-  Search, 
-  Calendar, 
-  Sparkles, 
+import {
+  ChevronRight,
+  Search,
+  Calendar,
+  Sparkles,
   Star,
 } from "lucide-react";
+import HorizontalBusinessSection from "@/components/home/HorizontalBusinessSection";
+
+/* =========================
+   TYPES (MATCH BACKEND)
+========================= */
+
+type Place = {
+  id: string;
+  name: string;
+  image?: string;
+  rating?: number;
+  address?: string;
+  branch?: string;
+  type?: "salon" | "spa";
+};
+
+const BACKEND_URL = "http://localhost:3001";
 
 
 /* ===========================
@@ -21,10 +37,14 @@ function Hero() {
   const router = useRouter();
 
   const handleBooking = () => {
-    // Corrected path - typically routes are absolute like "/book" 
-    // or relative to the app root.
-    router.push("/search");
-  };
+  const location =
+    typeof window !== 'undefined'
+      ? localStorage.getItem('cutpoint_location') || 'Mumbai'
+      : 'Mumbai';
+
+  router.push(`/search?cat=all&loc=${encodeURIComponent(location)}`);
+};
+
 
   return (
     <section className="relative min-h-[90vh] flex flex-col items-center pt-40 pb-48 overflow-hidden bg-white">
@@ -211,7 +231,7 @@ function HowItWorks() {
 =========================== */
 function Testimonials() {
   const reviews = [
-    { name: "Ananya Sharma", role: "Verified Member", image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80", text: "The ease of finding a high-end spa in Mumbai through The Cut Point was incredible. The service I booked was truly world-class." },
+    { name: "Ananya Sharma", role: "Verified Member", image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80", text: "The ease of finding a high-end spa in Mumbai through Glow Biz was incredible. The service I booked was truly world-class." },
     { name: "Rohan Mehra", role: "Verified Member", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80", text: "Finally a platform that understands luxury. The curated list of salons in Delhi is exceptional. Highly recommend for busy professionals." },
     { name: "Sanya Malhotra", role: "Verified Member", image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=150&q=80", text: "I love the seamless booking experience. No more long wait times or phone calls. Just pure relaxation from the moment I open the app." },
   ];
@@ -293,11 +313,137 @@ function Newsletter() {
 /* ===========================
     FINAL HOME PAGE
 =========================== */
+// export default function HomePage() {
+//   const [places, setPlaces] = useState<Place[]>([]);
+
+//   useEffect(() => {
+//     const fetchHomeBusinesses = async () => {
+//       try {
+//         const loc =
+//           typeof window !== 'undefined'
+//             ? localStorage.getItem('cutpoint_location') ?? 'Mumbai'
+//             : 'Mumbai';
+
+//         const res = await fetch(
+//           `${BACKEND_URL}/api/customer/businesses?loc=${loc}`,
+//           { cache: 'no-store' }
+//         );
+
+//         const data = await res.json();
+//         setPlaces(Array.isArray(data?.salons) ? data.salons : []);
+//       } catch (err) {
+//         console.error('HomePage fetch failed', err);
+//         setPlaces([]);
+//       }
+//     };
+
+//     fetchHomeBusinesses();
+//   }, []);
+
+//   // ✅ filter + limit
+//   const spas = places.filter(p => p.type === 'spa').slice(0, 5);
+//   const salons = places.filter(p => p.type === 'salon').slice(0, 5);
+
+//   return (
+//     <main className="overflow-x-hidden selection:bg-[#b3936a]/20 selection:text-[#4a3728]">
+//       <Hero />
+//       <Services />
+
+//       {/* 🧖 SPA SECTION */}
+//       {spas.length > 0 && (
+//         <HorizontalBusinessSection
+//           title="Luxury Spas Near You"
+//           items={spas}
+//           viewAllHref="/search?cat=spa"
+//         />
+//       )}
+
+//       {/* 💇 SALON SECTION */}
+//       {salons.length > 0 && (
+//         <HorizontalBusinessSection
+//           title="Premium Salons Near You"
+//           items={salons}
+//           viewAllHref="/search?cat=hair"
+//         />
+//       )}
+
+//       <HowItWorks />
+//       <Testimonials />
+//       <Newsletter />
+//     </main>
+//   );
+// }
+
 export default function HomePage() {
+  const [places, setPlaces] = useState<Place[]>([]);
+
+useEffect(() => {
+  const fetchHomeBusinesses = async () => {
+    try {
+      const loc =
+        typeof window !== "undefined"
+          ? localStorage.getItem("cutpoint_location") ?? "Mumbai"
+          : "Mumbai";
+
+      const res = await fetch(
+        `${BACKEND_URL}/api/customer/businesses?loc=${loc}`,
+        { cache: "no-store" }
+      );
+
+      const data = await res.json();
+
+      // ✅ MERGE SALONS + SPAS (CRITICAL FIX)
+      const allBusinesses = [
+        ...(Array.isArray(data?.salons) ? data.salons : []),
+        ...(Array.isArray(data?.spas) ? data.spas : []),
+      ];
+
+      // ✅ NORMALIZE IMAGES
+      const normalized: Place[] = allBusinesses.map((item: any) => ({
+        ...item,
+        image: item.image
+          ? item.image.startsWith("http")
+            ? item.image
+            : `${BACKEND_URL}${item.image}`
+          : "/placeholder.jpg",
+      }));
+
+      setPlaces(normalized);
+    } catch (err) {
+      console.error("HomePage fetch failed", err);
+      setPlaces([]);
+    }
+  };
+
+  fetchHomeBusinesses();
+}, []);
+
+
+  // ✅ FILTER BY TYPE
+  const spas = places.filter((p) => p.type === "spa").slice(0, 5);
+  const salons = places.filter((p) => p.type === "salon").slice(0, 5);
+
   return (
-    <main className="overflow-x-hidden selection:bg-[#b3936a]/20 selection:text-[#4a3728]">
+    <main className="overflow-x-hidden">
       <Hero />
-      <Services />
+
+      {/* 💇 SALON SECTION */}
+      {salons.length > 0 && (
+        <HorizontalBusinessSection
+          title="Premium Salons Near You"
+          items={salons}
+          viewAllHref="/search?cat=hair"
+        />
+      )}
+            {/* 🧖 SPA SECTION */}
+      {spas.length > 0 && (
+        <HorizontalBusinessSection
+          title="Luxury Spas Near You"
+          items={spas}
+          viewAllHref="/search?cat=spa"
+        />
+      )}
+
       <HowItWorks />
       <Testimonials />
       <Newsletter />

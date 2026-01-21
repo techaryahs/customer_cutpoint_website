@@ -84,10 +84,22 @@ export default function SearchPage() {
         console.log('📦 Raw API Response:', data);
         console.log('🏪 Salons array:', data?.salons);
 
-        const salons = Array.isArray(data?.salons) ? data.salons : [];
+        const salons: Place[] = Array.isArray(data?.salons)
+          ? data.salons.map((s: any) => ({
+            ...s,
+            type: 'salon',
+          }))
+          : [];
+
+        const spas: Place[] = Array.isArray(data?.spas)
+          ? data.spas.map((s: any) => ({
+            ...s,
+            type: 'spa',
+          }))
+          : [];
         console.log('✅ Parsed places:', salons);
 
-        setPlaces(salons);
+        setPlaces([...salons, ...spas]);
       } catch (err) {
         console.error('❌ Search fetch failed:', err);
         setPlaces([]);
@@ -110,15 +122,18 @@ export default function SearchPage() {
   const filteredPlaces = useMemo(() => {
     return places.filter((place) => {
       // category filter
-      if (category !== 'all' && place.type && place.type !== category) {
+      if (category !== 'all' && place.type !== category) {
         return false;
       }
+
 
       // location filter
       if (normalizedLoc) {
         const matchesLoc =
-          place.branch?.toLowerCase().includes(normalizedLoc) ||
-          place.address?.toLowerCase().includes(normalizedLoc);
+          `${place.branch ?? ''} ${place.address ?? ''}`
+            .toLowerCase()
+            .includes(normalizedLoc);
+
 
         if (!matchesLoc) return false;
       }
@@ -194,9 +209,7 @@ export default function SearchPage() {
                 </p>
                 <button
                   onClick={() =>
-                    (window.location.href = `/search?loc=${encodeURIComponent(
-                      loc
-                    )}`)
+                  (window.location.href = `/search?cat=${category}&loc=${encodeURIComponent(loc)}`)
                   }
                   className="mt-4 text-goldDark underline font-medium"
                 >

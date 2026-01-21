@@ -34,6 +34,8 @@ type NavLink = {
 // --- CONSTANTS ---
 const CITIES = ["Mumbai", "Delhi NCR", "Bangalore", "Pune", "Hyderabad", "Chennai"];
 const LOCATION_STORAGE_KEY = 'cutpoint_location';
+const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_MAP_API;
+
 
 export default function Header() {
   const router = useRouter();
@@ -75,11 +77,22 @@ export default function Header() {
   // --- NAVIGATION LINKS ---
   const discoveryLinks: NavLink[] = [
     { name: 'Home', href: '/', type: 'exact' },
-    { name: 'Salon', href: `/search?cat=hair&loc=${encodeURIComponent(location)}`, type: 'query', value: 'hair' },
-    { name: 'Spa', href: `/search?cat=spa&loc=${encodeURIComponent(location)}`, type: 'query', value: 'spa' },
+    {
+      name: 'Salon',
+      href: `/search?cat=salon&loc=${encodeURIComponent(location)}`,
+      type: 'query',
+      value: 'salon',
+    },
+    {
+      name: 'Spa',
+      href: `/search?cat=spa&loc=${encodeURIComponent(location)}`,
+      type: 'query',
+      value: 'spa',
+    },
     { name: 'Offers', href: '/offers', type: 'path' },
     { name: 'Trends', href: '/trends', type: 'path' },
   ];
+
 
   // --- ACTIVE LOGIC ---
   const isActive = (link: NavLink) => {
@@ -112,6 +125,14 @@ export default function Header() {
     window.addEventListener('scroll', handleScroll);
     window.addEventListener('storage', syncUser);
 
+    // 🔴 AUTO FETCH LIVE LOCATION (ONLY IF NOT ALREADY STORED)
+    if (typeof window !== 'undefined') {
+      const storedLocation = localStorage.getItem(LOCATION_STORAGE_KEY);
+      if (!storedLocation) {
+        fetchLiveLocation();
+      }
+    }
+
     // Unified Click Outside Handler
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as Node;
@@ -122,6 +143,7 @@ export default function Header() {
         setIsLocationOpen(false);
       }
     };
+
     document.addEventListener('mousedown', handleClickOutside);
 
     return () => {
@@ -130,6 +152,7 @@ export default function Header() {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
 
   // --- HANDLERS ---
   const handleSearch = (e: React.FormEvent) => {
@@ -162,6 +185,66 @@ export default function Header() {
     }
   };
 
+
+  const fetchLiveLocation = async () => {
+  if (!navigator.geolocation) {
+    console.warn('Geolocation not supported');
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    async (position) => {
+      const { latitude, longitude } = position.coords;
+
+      console.log('📍 GPS Coordinates:', {
+        latitude,
+        longitude,
+      });
+
+      try {
+        const res = await fetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.NEXT_PUBLIC_MAP_API}`
+        );
+
+        const data = await res.json();
+
+        // 🔥 FULL RAW RESPONSE
+        console.log('🧭 FULL GEOCODE RESPONSE:', data);
+
+        // 🔥 FIRST RESULT
+        console.log('📌 PRIMARY RESULT:', data.results?.[0]);
+
+        // 🔥 FORMATTED ADDRESS
+        console.log(
+          '🏠 FORMATTED ADDRESS:',
+          data.results?.[0]?.formatted_address
+        );
+
+        // 🔥 ALL ADDRESS COMPONENTS (MOST IMPORTANT)
+        console.table(
+          data.results?.[0]?.address_components?.map((c: any) => ({
+            long_name: c.long_name,
+            short_name: c.short_name,
+            types: c.types.join(', '),
+          }))
+        );
+
+      } catch (error) {
+        console.error('❌ Geocoding API failed:', error);
+      }
+    },
+    (error) => {
+      console.error('❌ Geolocation error:', error);
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0,
+    }
+  );
+};
+
+
   // --- STYLING VARS ---
   const isHome = pathname === '/';
 
@@ -188,11 +271,9 @@ export default function Header() {
           {/* DESKTOP LOCATION DROPDOWN (Hidden on Mobile) */}
           <div className="relative hidden md:block" ref={locationRef}>
             <button
-              onClick={() => setIsLocationOpen(!isLocationOpen)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${isHome && !isScrolled
-                ? 'bg-white/80 hover:bg-white text-cocoa shadow-sm'
-                : 'bg-white border border-transparent hover:border-gold/30 text-cocoa shadow-sm'
-                }`}>
+              onClick={fetchLiveLocation}
+              className="flex items-center gap-2 ..."
+            >
               <MapPin className="w-4 h-4 text-goldDark" />
               <span className="truncate max-w-[100px]">{location}</span>
               <span className={`text-xs opacity-60 transition-transform duration-200 ${isLocationOpen ? 'rotate-180' : ''}`}>▼</span>
@@ -259,7 +340,7 @@ export default function Header() {
 
           {/* Desktop Book Now */}
           <Link
-            href={`/search?&loc=${encodeURIComponent(location)}`}
+            href={`/search?cat=all&loc=${encodeURIComponent(location)}`}
             className={`hidden lg:flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold shadow-soft transition-transform hover:scale-105 active:scale-95 ${isHome && !isScrolled
               ? 'bg-cocoa text-sand hover:bg-taupe'
               : 'bg-gradient-to-r from-gold to-goldDark text-white hover:brightness-110'
@@ -410,7 +491,7 @@ export default function Header() {
 
             {/* Book Now - Compact */}
             <Link
-              href="/search"
+              href={`/search?cat=all&loc=${encodeURIComponent(location)}`}
               onClick={() => setIsMobileOpen(false)}
               className="flex items-center justify-center gap-2 w-full bg-goldDark text-white py-2.5 rounded-xl font-bold text-sm shadow-soft mb-3 hover:bg-cocoa transition-colors"
             >
