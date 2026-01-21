@@ -63,7 +63,7 @@ export default function BookingFlowInline({ venue, services, totalPrice, staff, 
     return `${h.toString().padStart(2, '0')}:${mm.toString().padStart(2, '0')}`;
   };
 
-  // 3. Generate Movie-Style Slots
+  // 3. Generate Dynamic Slots with Service-Based Intervals & Booked Visibility
   const timeSlots = useMemo(() => {
     const dayName = new Date(selectedDateISO).toLocaleDateString('en-US', { weekday: 'long' });
     const todayTiming = venue.timings?.[dayName] || { open: "10:00", close: "20:00", isOpen: true };
@@ -72,41 +72,78 @@ export default function BookingFlowInline({ venue, services, totalPrice, staff, 
 
     const startMins = timeToMins(todayTiming.open);
     const endMins = timeToMins(todayTiming.close);
-    const slots = [];
+    const slots: { time: string; status: 'available' | 'booked' | 'mismatch' }[] = [];
 
-    for (let current = startMins; current + totalNeededMinutes <= endMins; current += 30) {
+    // Date Conversion: YYYY-MM-DD -> DD-MM-YYYY (for DB lookup)
+    const [year, month, day] = selectedDateISO.split('-');
+    const selectedDateDMY = `${day}-${month}-${year}`;
+
+    // Access bookings from the correct structure { date, totalBookings, bookings }
+    const daysData = bookedSlots[selectedDateDMY];
+    const daysBookings = Array.isArray(daysData) ? daysData : (daysData?.bookings || []);
+
+    // Sort bookings to process chronologically
+    const sortedBookings = [...daysBookings].sort((a, b) => timeToMins(a.startTime) - timeToMins(b.startTime));
+
+    let current = startMins;
+
+    while (current < endMins) {
+      const windowStart = current;
       const windowEnd = current + totalNeededMinutes;
 
-      const getEmpStatus = (emp: any) => {
-        // Skill check
-        const canDoAll = services.every(s => emp.services.some((es: any) => es.serviceId === s.serviceId));
-        if (!canDoAll) return 'mismatch';
+      // Check if current time falls within ANY booking for the selected staff
+      const activeBooking = sortedBookings.find(b => {
+        if (selectedStaffId !== 'any' && b.employeeId !== selectedStaffId) return false;
+        const bStart = timeToMins(b.startTime);
+        const bDuration = parseInt(b.duration || '30'); // Default to 30 if duration missing
+        const bEnd = bStart + bDuration;
+        return (windowStart >= bStart && windowStart < bEnd);
+      });
 
-        // Overlap check
-        const daysBookings = bookedSlots[selectedDateISO] || [];
-        const isBusy = daysBookings.some((b: any) => {
-          if (b.employeeId !== emp.empid) return false;
-          const bStart = timeToMins(b.startTime);
-          const bEnd = bStart + parseInt(b.duration);
-          return (current < bEnd && windowEnd > bStart);
-        });
-        return isBusy ? 'booked' : 'available';
-      };
-
-      let finalStatus: 'available' | 'booked' | 'mismatch' = 'available';
-
-      if (selectedStaffId === 'any') {
-        const statuses = staff.map(emp => getEmpStatus(emp));
-        if (statuses.some(s => s === 'available')) finalStatus = 'available';
-        else if (statuses.every(s => s === 'mismatch')) finalStatus = 'mismatch';
-        else finalStatus = 'booked';
+      if (activeBooking) {
+        // This time is booked. Add a booked slot.
+        slots.push({ time: minsToTime(windowStart), status: 'booked' });
+        // To "show all slots booked under that period", we increment by 15 mins
+        current += 15;
       } else {
-        const emp = staff.find(s => s.empid === selectedStaffId);
-        finalStatus = emp ? getEmpStatus(emp) : 'mismatch';
+        // This time is free. Check if we can fit the service here.
+        if (windowEnd <= endMins) {
+          // Check if it overlaps with the NEXT booking
+          const nextBooking = sortedBookings.find(b => {
+            if (selectedStaffId !== 'any' && b.employeeId !== selectedStaffId) return false;
+            const bStart = timeToMins(b.startTime);
+            return bStart >= windowStart && bStart < windowEnd;
+          });
+
+          if (!nextBooking) {
+            // No overlap, this is an available slot!
+            slots.push({ time: minsToTime(windowStart), status: 'available' });
+            current += totalNeededMinutes; // Move by service duration
+          } else {
+            // Gap is too small for the service. Jump to the start of the next booking.
+            current = timeToMins(nextBooking.startTime);
+          }
+        } else {
+          // Can't fit before closing
+          break;
+        }
       }
 
-      slots.push({ time: minsToTime(current), status: finalStatus });
+      // Safety break
+      if (current <= windowStart && !activeBooking) current += 15;
     }
+
+    // Filter past times for today
+    const now = new Date();
+    const isToday = new Date(selectedDateISO).toDateString() === now.toDateString();
+    if (isToday) {
+      const nowMins = now.getHours() * 60 + now.getMinutes();
+      return slots.map(s => {
+        if (timeToMins(s.time) <= nowMins + 15) return { ...s, status: 'booked' };
+        return s;
+      });
+    }
+
     return slots;
   }, [selectedDateISO, selectedStaffId, totalNeededMinutes, bookedSlots, venue, staff, services]);
   console.log(selectedSlot,customerId,authToken)
@@ -229,14 +266,15 @@ export default function BookingFlowInline({ venue, services, totalPrice, staff, 
                   disabled={isBooked} 
                   onClick={() => setSelectedSlot(slot.time)}
                   className={`relative py-4 rounded-2xl text-sm font-bold border transition-all ${
-                    isBooked ? 'bg-linen border-transparent text-taupe/20 cursor-not-allowed' : 
+                    slot.status === 'booked' ? 'bg-gray-400 border-transparent text-white/50 cursor-not-allowed' :
+                    slot.status === 'mismatch' ? 'bg-linen border-transparent text-taupe/20 cursor-not-allowed' : 
                     isSelected ? 'bg-cocoa text-white border-cocoa shadow-md' : 'bg-white border-borderSoft text-cocoa hover:border-goldDark'
                   }`}
                 >
                   {slot.time}
                   {isBooked && (
                     <div className="absolute inset-0 flex items-center justify-center">
-                       <Ban className="w-4 h-4 text-red-500/10" />
+                       {slot.status === 'mismatch' ? <Ban className="w-4 h-4 text-red-500/10" /> : <Clock className="w-4 h-4 text-white/20" />}
                     </div>
                   )}
                 </button>
