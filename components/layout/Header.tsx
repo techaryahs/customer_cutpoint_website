@@ -50,6 +50,8 @@ export default function Header() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const [isMobileLocationExpanded, setIsMobileLocationExpanded] = useState(false); // ✅ New state for mobile dropdown
+  const [fullAddress, setFullAddress] = useState<string | null>(null);
+
 
   const [location, setLocation] = useState(() => {
     if (typeof window === 'undefined') return 'Mumbai';
@@ -196,10 +198,7 @@ export default function Header() {
     async (position) => {
       const { latitude, longitude } = position.coords;
 
-      console.log('📍 GPS Coordinates:', {
-        latitude,
-        longitude,
-      });
+      console.log('📍 GPS Coordinates:', { latitude, longitude });
 
       try {
         const res = await fetch(
@@ -208,33 +207,94 @@ export default function Header() {
 
         const data = await res.json();
 
-        // 🔥 FULL RAW RESPONSE
         console.log('🧭 FULL GEOCODE RESPONSE:', data);
 
-        // 🔥 FIRST RESULT
-        console.log('📌 PRIMARY RESULT:', data.results?.[0]);
+        const primaryResult = data.results?.[0];
+        if (!primaryResult) {
+          console.warn('❌ No geocode result found');
+          return;
+        }
 
-        // 🔥 FORMATTED ADDRESS
-        console.log(
-          '🏠 FORMATTED ADDRESS:',
-          data.results?.[0]?.formatted_address
-        );
+        const formattedAddress = primaryResult.formatted_address;
+        const components = primaryResult.address_components || [];
 
-        // 🔥 ALL ADDRESS COMPONENTS (MOST IMPORTANT)
+        console.log('🏠 FORMATTED ADDRESS:', formattedAddress);
+
         console.table(
-          data.results?.[0]?.address_components?.map((c: any) => ({
+          components.map((c: any) => ({
             long_name: c.long_name,
             short_name: c.short_name,
             types: c.types.join(', '),
           }))
         );
 
+        // ✅ PRIORITY: locality → sublocality → admin area
+        const cityComponent =
+          components.find((c: any) => c.types.includes('locality')) ||
+          components.find((c: any) =>
+            c.types.includes('sublocality_level_1')
+          ) ||
+          components.find((c: any) =>
+            c.types.includes('administrative_area_level_2')
+          );
+
+        if (!cityComponent) {
+          console.warn('❌ City not found in Google response');
+          return;
+        }
+
+        const detectedCity = cityComponent.long_name;
+
+        // ✅ NORMALIZE FOR BACKEND SEARCH
+        const finalCity =
+          detectedCity === 'Navi Mumbai' ? 'Mumbai' : detectedCity;
+
+        console.log('✅ DETECTED CITY:', detectedCity);
+        console.log('🎯 FINAL CITY USED:', finalCity);
+
+        // ✅ UPDATE HEADER STATE
+        setLocation(finalCity);
+        if (formattedAddress) {
+          setFullAddress(formattedAddress);
+          localStorage.setItem('cutpoint_full_address', formattedAddress);
+        }
+
+        localStorage.setItem(LOCATION_STORAGE_KEY, finalCity);
+
+        window.dispatchEvent(
+          new CustomEvent('cutpoint_location_change', {
+            detail: finalCity,
+          })
+        );
+
+        // ✅ REFRESH SEARCH PAGE IF USER IS THERE
+        if (pathname === '/search') {
+          const params = new URLSearchParams(
+            Array.from(searchParams.entries())
+          );
+          params.set('loc', finalCity);
+          router.push(`/search?${params.toString()}`);
+        }
       } catch (error) {
         console.error('❌ Geocoding API failed:', error);
       }
     },
     (error) => {
-      console.error('❌ Geolocation error:', error);
+      console.warn('📍 Geolocation denied or failed:', error);
+
+      // ✅ FALLBACK (NO CRASH)
+      const fallbackCity =
+        localStorage.getItem(LOCATION_STORAGE_KEY) || 'Mumbai';
+
+      const fallbackAddress =
+        localStorage.getItem('cutpoint_full_address') || fallbackCity;
+
+      setLocation(fallbackCity);
+      setFullAddress(fallbackAddress);
+
+      localStorage.setItem(LOCATION_STORAGE_KEY, fallbackCity);
+
+      console.info('➡️ Falling back to:', fallbackCity);
     },
     {
       enableHighAccuracy: true,
@@ -243,6 +303,8 @@ export default function Header() {
     }
   );
 };
+
+
 
 
   // --- STYLING VARS ---
@@ -275,7 +337,10 @@ export default function Header() {
               className="flex items-center gap-2 ..."
             >
               <MapPin className="w-4 h-4 text-goldDark" />
-              <span className="truncate max-w-[100px]">{location}</span>
+              <span className="truncate max-w-[180px] text-left leading-tight">
+                {fullAddress ? fullAddress : location}
+              </span>
+
               <span className={`text-xs opacity-60 transition-transform duration-200 ${isLocationOpen ? 'rotate-180' : ''}`}>▼</span>
             </button>
 
