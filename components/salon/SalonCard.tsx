@@ -2,11 +2,8 @@
 
 import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { MapPin, Star } from 'lucide-react';
-
-/* =========================
-   TYPES (MATCH BACKEND)
-========================= */
+import { MapPin, Star, ExternalLink } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 type Service = {
   serviceId?: string;
@@ -31,49 +28,24 @@ type SalonCardProps = {
   item: BaseListing;
 };
 
-/* =========================
-   CONSTANTS
-========================= */
-
-const BACKEND_URL = 'http://localhost:3001';
-
-/* =========================
-   HELPERS
-========================= */
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 function getPriceTierFromServices(services?: Service[]): string {
   if (!Array.isArray(services) || services.length === 0) return '₹';
-
-  const prices = services
-    .map((s) => Number(s.price))
-    .filter((p) => Number.isFinite(p) && p > 0);
-
+  const prices = services.map((s) => Number(s.price)).filter((p) => Number.isFinite(p) && p > 0);
   if (!prices.length) return '₹';
-
-  const avg =
-    prices.reduce((sum, price) => sum + price, 0) / prices.length;
-
+  const avg = prices.reduce((sum, price) => sum + price, 0) / prices.length;
   if (avg >= 2500) return '₹₹₹₹';
   if (avg >= 1200) return '₹₹₹';
   if (avg >= 600) return '₹₹';
   return '₹';
 }
 
-/* =========================
-   COMPONENT
-========================= */
-
 export default function SalonCard({ kind, item }: SalonCardProps) {
   const router = useRouter();
 
-  const priceTier = useMemo(
-    () => getPriceTierFromServices(item.services),
-    [item.services]
-  );
-
-  const locationLabel = [item.branch, item.address]
-    .filter(Boolean)
-    .join(', ');
+  const priceTier = useMemo(() => getPriceTierFromServices(item.services), [item.services]);
+  const locationLabel = [item.branch, item.address].filter(Boolean).join(', ');
 
   const navigate = () => {
     if (!item.id) return;
@@ -81,87 +53,73 @@ export default function SalonCard({ kind, item }: SalonCardProps) {
   };
 
   return (
-    <div
-      role="button"
-      tabIndex={0}
+    <motion.div
+      whileHover={{ y: -6 }}
       onClick={navigate}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') navigate();
-      }}
-      className="group break-inside-avoid bg-white rounded-2xl border border-borderSoft
-                 overflow-hidden hover:shadow-card hover:border-gold/30
-                 transition-all duration-300 cursor-pointer"
+      className="group bg-white rounded-[1.5rem] border border-borderSoft overflow-hidden hover:shadow-xl hover:border-gold/30 transition-all duration-500 cursor-pointer"
     >
-      {/* IMAGE */}
-      <div className="relative h-52 bg-sand overflow-hidden">
+      {/* IMAGE CONTAINER */}
+      <div className="relative h-48 overflow-hidden">
         {item.image ? (
           <img
-            src={
-              item.image.startsWith('http')
-                ? item.image
-                : `${BACKEND_URL}${item.image}`
-            }
+            src={item.image.startsWith('http') ? item.image : `${BACKEND_URL}${item.image}`}
             alt={item.name}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-xs text-taupe">
-            No image available
+          <div className="w-full h-full bg-linen flex items-center justify-center text-[9px] font-black uppercase tracking-widest text-taupe/40">
+            No Image
           </div>
         )}
 
-        {/* TYPE */}
-        <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm
-                         px-2.5 py-1 rounded-md text-[10px]
-                         font-bold uppercase tracking-wider text-cocoa shadow-sm">
-          {kind}
-        </span>
-
-        {/* RATING */}
-        <span className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm
-                         px-2 py-1 rounded-md flex items-center gap-1 shadow-sm">
-          <Star className="w-3 h-3 text-green-600 fill-current" />
-          <span className="text-xs font-bold text-green-800">
-            {typeof item.rating === 'number'
-              ? item.rating.toFixed(1)
-              : '—'}
+        {/* GLASS OVERLAYS */}
+        <div className="absolute top-3 left-3 flex gap-2">
+          <span className="bg-white/80 backdrop-blur-md px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest text-cocoa shadow-lg border border-white/20">
+            {kind}
           </span>
-        </span>
+        </div>
+
+        <div className="absolute top-3 right-3 h-fit">
+          <div className="bg-white/80 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1 shadow-lg border border-white/20">
+            <Star className="w-2.5 h-2.5 text-green-600 fill-green-600" />
+            <span className="text-[10px] font-black text-green-900">
+              {typeof item.rating === 'number' ? item.rating.toFixed(1) : '5.0'}
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* CONTENT */}
       <div className="p-5">
-        <div className="flex justify-between items-start gap-3 mb-2">
-          <h3 className="text-lg font-serif font-bold text-cocoa
-                         group-hover:text-goldDark transition-colors leading-tight">
+        <div className="flex justify-between items-start gap-4 mb-2">
+          <h3 className="text-lg font-serif font-bold text-cocoa group-hover:text-goldDark transition-colors leading-tight">
             {item.name}
           </h3>
-
-          <span className="text-xs font-bold text-cocoa/60 whitespace-nowrap">
+          <span className="text-[9px] font-black text-taupe/40 tracking-widest mt-0.5">
             {priceTier}
           </span>
         </div>
 
-        <p className="text-sm text-taupe flex items-center gap-1.5 mb-4">
-          <MapPin className="w-3.5 h-3.5 text-goldDark" />
-          <span className="truncate">
+        <p className="text-xs text-taupe font-medium flex items-start gap-1.5 mb-4 opacity-70">
+          <MapPin className="w-3.5 h-3.5 text-goldDark shrink-0 mt-0.5" />
+          <span className="line-clamp-1 leading-snug">
             {locationLabel || 'Location unavailable'}
           </span>
         </p>
 
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            navigate();
-          }}
-          className="w-full bg-gradient-to-r from-gold to-goldDark
-                     text-white py-2.5 rounded-xl font-bold
-                     hover:brightness-110 transition-all shadow-soft"
-        >
-          Book Now
-        </button>
+        <div className="pt-4 border-t border-linen flex items-center justify-between">
+          <div className="flex flex-col">
+             <span className="text-[8px] font-black text-taupe/30 uppercase tracking-widest">Starting from</span>
+             <span className="text-base font-serif font-bold text-cocoa">₹299</span>
+          </div>
+          <button
+            type="button"
+            className="flex items-center gap-1.5 bg-cocoa text-white px-4 py-2.5 rounded-xl font-black text-[9px] uppercase tracking-widest hover:bg-goldDark transition-all shadow-xl active:scale-95"
+          >
+            Explore <ExternalLink className="w-3 h-3" />
+          </button>
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
