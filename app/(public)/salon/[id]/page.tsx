@@ -22,19 +22,27 @@ export default function SalonDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
+  const [offers, setOffers] = useState<any[]>([]);
 
   useEffect(() => {
     if (!salonId) return;
     const fetchSalonDetails = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(`${API_BASE_URL}/customer/salon/details/${salonId}`);
-        if (res.data.success) {
-          setSalon({ ...res.data.place, slotsByDate: res.data.slotsByDate, type: 'salon' });
-          setEmployees(res.data.employees || []);
+        const [detailsRes, offersRes] = await Promise.all([
+          axios.get(`${API_BASE_URL}/customer/salon/details/${salonId}`),
+          axios.get(`${API_BASE_URL}/offers/salon/${salonId}`)
+        ]);
+        
+        if (detailsRes.data.success) {
+          setSalon({ ...detailsRes.data.place, slotsByDate: detailsRes.data.slotsByDate, type: 'salon' });
+          setEmployees(detailsRes.data.employees || []);
         } else {
           setError('Salon details not found');
         }
+        
+        // Store offers (only approved ones will be returned by backend for customers)
+        setOffers(offersRes.data || []);
       } catch (err) {
         setError('Failed to load salon. Please try again later.');
       } finally {
@@ -44,13 +52,47 @@ export default function SalonDetailPage() {
     fetchSalonDetails();
   }, [salonId]);
 
+  // Get active offers that are valid today
+  const activeOffers = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0];
+    return offers.filter(offer => 
+      offer.status === 'approved' && 
+      offer.validFrom <= today && 
+      offer.validUntil >= today
+    );
+  }, [offers]);
+
   const activeServices = useMemo(() => {
     if (!salon?.services) return [];
     const servicesArray = Array.isArray(salon.services) 
       ? salon.services 
       : Object.values(salon.services);
-    return servicesArray.filter((s: VenueService) => s.isActive !== false);
-  }, [salon]);
+    
+    // Merge discount info from active offers into services
+    return servicesArray
+      .filter((s: VenueService) => s.isActive !== false)
+      .map((service: VenueService) => {
+        // Find if there's an offer for this service (or for "all" services)
+        const matchingOffer = activeOffers.find(offer => 
+          offer.serviceId === service.serviceId || offer.serviceId === 'all'
+        );
+        
+        if (matchingOffer) {
+          const originalPrice = Number(service.price);
+          const discountPercent = Number(matchingOffer.discount);
+          const discountedPrice = Math.round(originalPrice * (1 - discountPercent / 100));
+          
+          return {
+            ...service,
+            hasDiscount: true,
+            discountPercent,
+            discountedPrice
+          };
+        }
+        
+        return service;
+      });
+  }, [salon, activeOffers]);
 
   const selectedServices = useMemo<BookingService[]>(() => {
     return selectedServiceIds
@@ -59,7 +101,8 @@ export default function SalonDetailPage() {
       .map((s) => ({
         serviceId: s!.serviceId,
         name: s!.name,
-        price: s!.price,
+        // Use discounted price if available
+        price: s!.hasDiscount ? s!.discountedPrice! : s!.price,
         duration: s!.duration,
       }));
   }, [selectedServiceIds, activeServices]);

@@ -2,6 +2,7 @@
 'use client';
 
 import { VenueService } from '@/types/venue';
+import { Tag } from 'lucide-react';
 
 interface ServiceListProps {
   services: VenueService[];
@@ -25,12 +26,21 @@ export default function ServiceList({ services, selectedServiceIds, onToggleServ
         return (
           <div 
             key={service.serviceId} 
-            className={`group flex flex-col md:flex-row gap-5 p-5 rounded-[1.5rem] border transition-all duration-300 ${
+            className={`group flex flex-col md:flex-row gap-5 p-5 rounded-[1.5rem] border transition-all duration-300 relative ${
               selected 
                 ? 'bg-cocoa border-cocoa shadow-lg shadow-cocoa/10' 
                 : 'bg-white border-borderSoft hover:border-gold/50 hover:shadow-soft'
             }`}
           >
+            {/* Discount Badge */}
+            {service.hasDiscount && (
+              <div className="absolute -top-2 -right-2 z-10">
+                <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-lg flex items-center gap-1">
+                  <Tag size={10} /> {service.discountPercent}% OFF
+                </div>
+              </div>
+            )}
+            
             {service.image && (
               <div className="w-full md:w-24 h-24 flex-shrink-0 overflow-hidden rounded-xl">
                 <img 
@@ -51,9 +61,24 @@ export default function ServiceList({ services, selectedServiceIds, onToggleServ
                     {service.category || 'Service'} • {service.duration} min
                   </p>
                 </div>
-                <p className={`text-lg font-serif font-bold transition-colors ${selected ? 'text-gold' : 'text-goldDark'}`}>
-                  ₹{service.price}
-                </p>
+                
+                {/* Price Display */}
+                <div className="text-right">
+                  {service.hasDiscount ? (
+                    <div className="flex flex-col items-end">
+                      <p className={`text-xs line-through transition-colors ${selected ? 'text-white/40' : 'text-taupe/50'}`}>
+                        ₹{service.price}
+                      </p>
+                      <p className={`text-lg font-serif font-bold transition-colors ${selected ? 'text-green-300' : 'text-green-600'}`}>
+                        ₹{service.discountedPrice}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className={`text-lg font-serif font-bold transition-colors ${selected ? 'text-gold' : 'text-goldDark'}`}>
+                      ₹{service.price}
+                    </p>
+                  )}
+                </div>
               </div>
               
               <p className={`text-xs mt-2 line-clamp-1 transition-colors ${selected ? 'text-white/80' : 'text-taupe/70'}`}>

@@ -9,6 +9,10 @@ export type VenueService = {
   description?: string;
   image?: string;
   isActive?: boolean;
+  // Discount fields (computed from active offers)
+  discountPercent?: number;
+  discountedPrice?: number;
+  hasDiscount?: boolean;
 };
 
 export type EmployeeService = {
