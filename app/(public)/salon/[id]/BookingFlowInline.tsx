@@ -192,7 +192,7 @@ export default function BookingFlowInline({ venue, services, totalPrice, staff, 
           price: parseInt(s.price),
           duration: parseInt(s.duration)
         })),
-        date: selectedDateISO,
+        date: selectedDateISO.split('-').reverse().join('-'), // YYYY-MM-DD -> DD-MM-YYYY
         startTime: selectedSlot,
         paymentId: "PAY-" + Math.random().toString(36).substring(7).toUpperCase()
       };

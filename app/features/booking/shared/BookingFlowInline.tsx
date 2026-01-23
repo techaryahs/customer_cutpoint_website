@@ -221,7 +221,7 @@ export default function BookingFlowInline({ venue, services, totalPrice, onChang
         price: Number(s.price),
         duration: Number(s.duration),
       })),
-      date: selectedDateISO,
+      date: selectedDateISO.split('-').reverse().join('-'), // YYYY-MM-DD -> DD-MM-YYYY
       startTime: selectedSlot,
       paymentId: `PAY_${Date.now()}`, // dummy payment id
     };
