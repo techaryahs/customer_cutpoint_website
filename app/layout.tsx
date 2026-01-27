@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import ChatbotWidget from "@/components/chatbot/ChatbotWidget";
 import { MessageCircle } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -18,6 +19,9 @@ export default function RootLayout({
     <html lang="en" className="light">
       <body className="bg-linen text-cocoa antialiased">
         <div className="min-h-screen flex flex-col relative">
+
+          {/* 🤖 CHATBOT (ICON + POPUP HANDLED INTERNALLY) */}
+          <ChatbotWidget />
 
           {/* 🔥 WHATSAPP FLOATING BUTTON */}
           <a
