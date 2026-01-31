@@ -3,6 +3,7 @@
 
 import { VenueService } from '@/types/venue';
 import { Tag } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface ServiceListProps {
   services: VenueService[];
@@ -11,10 +12,11 @@ interface ServiceListProps {
 }
 
 export default function ServiceList({ services, selectedServiceIds, onToggleService }: ServiceListProps) {
+  const t = useTranslations('Services');
   if (services.length === 0) {
     return (
       <div className="bg-white p-12 rounded-[2rem] text-center border border-dashed border-borderSoft">
-        <p className="text-taupe font-medium opacity-60">No active services available.</p>
+        <p className="text-taupe font-medium opacity-60">{t('empty')}</p>
       </div>
     );
   }
@@ -36,7 +38,7 @@ export default function ServiceList({ services, selectedServiceIds, onToggleServ
             {service.hasDiscount && (
               <div className="absolute -top-2 -right-2 z-10">
                 <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-lg flex items-center gap-1">
-                  <Tag size={10} /> {service.discountPercent}% OFF
+                  <Tag size={10} /> {t('off', { count: service.discountPercent || 0 })}
                 </div>
               </div>
             )}
@@ -58,7 +60,7 @@ export default function ServiceList({ services, selectedServiceIds, onToggleServ
                     {service.name}
                   </h4>
                   <p className={`text-[10px] mt-0.5 transition-colors ${selected ? 'text-white/60' : 'text-taupe'}`}>
-                    {service.category || 'Service'} • {service.duration} min
+                    {service.category || t('service')} • {t('mins', { count: service.duration })}
                   </p>
                 </div>
                 
@@ -95,7 +97,7 @@ export default function ServiceList({ services, selectedServiceIds, onToggleServ
                     : 'bg-linen text-cocoa hover:bg-cocoa hover:text-white'
                 }`}
               >
-                {selected ? 'Remove' : 'Add to Booking'}
+                {selected ? t('remove') : t('add_to_booking')}
               </button>
             </div>
           </div>

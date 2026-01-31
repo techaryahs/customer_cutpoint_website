@@ -1,0 +1,123 @@
+{
+  "Layout": {
+    "member_portal": "Member Portal",
+    "personal_area": "Personal Area",
+    "styling_advice": "Need styling advice?",
+    "consult_expert": "Consult an expert →",
+    "menu": {
+      "profile": "Profile",
+      "appointments": "Appointments",
+      "wallet": "Wallet",
+      "favorites": "Favorites",
+      "orders": "Orders",
+      "settings": "Settings"
+    }
+  },
+  "Profile": {
+    "title": "Profile",
+    "edit": "Edit",
+    "first_name_label": "First name",
+    "last_name_label": "Last name",
+    "mobile_label": "Mobile number",
+    "email_label": "Email",
+    "dob_label": "Date of birth",
+    "gender_label": "Gender",
+    "my_addresses": "My addresses",
+    "home": "Home",
+    "work": "Work",
+    "add_home_addr": "Add a home address",
+    "add_work_addr": "Add a work address",
+    "add": "Add",
+    "loading": "Loading profile...",
+    "not_found": "Profile information not found"
+  },
+  "Appointments": {
+    "title": "My Sessions",
+    "active_bookings": "You have {count} active bookings.",
+    "book_new": "Book New Experience",
+    "tabs": {
+      "today": "Today",
+      "upcoming": "Upcoming",
+      "previous": "Previous"
+    },
+    "filter_placeholder": "Filter...",
+    "loading": "Loading your schedule...",
+    "empty_title": "Your schedule is empty",
+    "empty_desc": "Looks like you haven't booked anything yet.",
+    "find_and_book": "Find a salon & Book",
+    "with": "With",
+    "assigned_pro": "Assigned Professional",
+    "duration_mins": "{count} mins",
+    "expert": "Expert",
+    "date_time": "Date & Time",
+    "reschedule": "Reschedule",
+    "cancel": "Cancel",
+    "review_exp": "Review Experience",
+    "reviewed": "Reviewed",
+    "locked": "Locked (within 1h)",
+    "cancel_modal": {
+      "title": "Cancel Booking?",
+      "desc": "Are you sure? You're cancelling your session at {placeName}. This time slot will be released for others.",
+      "processing": "Processing...",
+      "confirm": "Yes, Cancel Session",
+      "keep": "Keep Booking"
+    },
+    "reschedule_modal": {
+      "title": "Move Appointment",
+      "desc": "Select a new date and time for your session at {placeName}.",
+      "pick_date": "Pick Date",
+      "available_slots": "Available Slots",
+      "updating": "Updating...",
+      "no_slots": "No slots available for this date",
+      "select_date_first": "Select a date first",
+      "rescheduling": "Rescheduling...",
+      "confirm_new_time": "Confirm New Time",
+      "keep_original": "Keep Original Time"
+    },
+    "review_modal": {
+      "title": "Rate Your Experience",
+      "desc": "How was your session at {placeName}?",
+      "placeholder": "Share your thoughts... (optional)",
+      "submitting": "Submitting...",
+      "submit": "Submit Review"
+    }
+  },
+  "Favorites": {
+    "title": "Your Favorites",
+    "saved_exp": "Saved Experiences",
+    "desc": "Keep track of the places that make you feel your best.",
+    "discover_more": "Discover More",
+    "loading": "Loading your favorites...",
+    "empty_title": "No favorites yet",
+    "empty_desc": "Explore our curated selection of salons and spas to find your next grooming destination.",
+    "start_exploring": "Start Exploring"
+  },
+  "Orders": {
+    "title": "Orders",
+    "browse_products": "Browse products",
+    "ordered_on": "Ordered on {date}",
+    "view_details": "View details",
+    "empty_desc": "You haven’t placed any product orders yet"
+  },
+  "Settings": {
+    "title": "Settings",
+    "edit_profile": "Edit profile",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "save_changes": "Save changes",
+    "profile_info": "Profile information",
+    "full_name": "Full name",
+    "email_addr": "Email address",
+    "phone_num": "Phone number",
+    "logout_title": "Logout",
+    "logout_btn": "Logout",
+    "loading": "Loading settings...",
+    "update_failed": "Update failed"
+  },
+  "Wallet": {
+    "title": "Wallet",
+    "balance": "Wallet balance",
+    "activity": "Wallet activity",
+    "no_transactions": "No wallet transactions yet"
+  }
+}

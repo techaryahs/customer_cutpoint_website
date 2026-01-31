@@ -1,0 +1,30 @@
+{
+  "Discovery": {
+    "loading": "Curating the best deals for you...",
+    "exclusive": "Exclusive Rewards",
+    "title": "Limited Time {flashDeals}",
+    "flashDeals": "Flash Deals",
+    "description": "Discover premium grooming experiences at unbeatable prices. Handpicked offers from top salons in your area.",
+    "active_region": "Active Region",
+    "search_placeholder": "Search by salon or service...",
+    "validity": "Validity",
+    "all": "All",
+    "next_2_days": "Next 2 Days",
+    "this_week": "This Week",
+    "this_month": "This Month",
+    "empty_title": "No matching offers found",
+    "empty_desc": "We couldn't find any offers matching your criteria in {location}. Check back soon or try adjusting your filters.",
+    "reset": "Reset Filters"
+  },
+  "Card": {
+    "save": "Save",
+    "expiring_today": "Expiring Today",
+    "days_left": "{count} Days Left",
+    "until": "Until {date}",
+    "storewide": "Storewide Deal",
+    "service_special": "Service Special",
+    "available_at": "Available at {salon}",
+    "location": "Location",
+    "claim": "Claim"
+  }
+}

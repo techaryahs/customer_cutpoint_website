@@ -6,6 +6,7 @@ import { Calendar, Clock, CheckCircle2, Ban } from 'lucide-react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BookingService, Employee, VenueType } from '@/types/venue';
+import { useTranslations, useLocale } from 'next-intl';
 
 interface Props {
   venue: { id: string; name: string; type: VenueType; timings?: any };
@@ -16,6 +17,8 @@ interface Props {
 }
 
 export default function UnifiedBookingFlow({ venue, services, totalPrice, staff, bookedSlots }: Props) {
+  const t = useTranslations('Booking');
+  const locale = useLocale();
   const [selectedDateISO, setSelectedDateISO] = useState(new Date().toISOString().split('T')[0]);
   const [selectedStaffId, setSelectedStaffId] = useState<string | 'any'>('any');
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
@@ -125,7 +128,7 @@ export default function UnifiedBookingFlow({ venue, services, totalPrice, staff,
 
   const handleBooking = async () => {
     if (!selectedSlot || !customerId || !authToken) {
-      alert("Please login to proceed with the booking.");
+      alert(t('login_required'));
       return;
     }
 
@@ -149,7 +152,7 @@ export default function UnifiedBookingFlow({ venue, services, totalPrice, staff,
           return canDoAll && !isBusy;
         });
 
-        if (eligibleStaff.length === 0) throw new Error("No staff available for this slot.");
+        if (eligibleStaff.length === 0) throw new Error(t('no_staff'));
         const randomIdx = Math.floor(Math.random() * eligibleStaff.length);
         finalEmpId = eligibleStaff[randomIdx].empid;
       }
@@ -174,10 +177,10 @@ export default function UnifiedBookingFlow({ venue, services, totalPrice, staff,
         headers: { Authorization: `Bearer ${authToken}` }
       });
 
-      alert("Appointment successfully booked!");
+      alert(t('success_msg'));
       window.location.reload(); 
     } catch (err: any) {
-      alert(err.response?.data?.message || err.message || "Booking failed. Slot might be unavailable.");
+      alert(err.response?.data?.message || err.message || t('booking_failed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -185,13 +188,13 @@ export default function UnifiedBookingFlow({ venue, services, totalPrice, staff,
 
   return (
     <div className="mt-8 bg-white border border-borderSoft rounded-[2rem] p-8 shadow-soft">
-      <h2 className="text-2xl font-serif font-bold text-cocoa mb-6">Secure Your Experience</h2>
+      <h2 className="text-2xl font-serif font-bold text-cocoa mb-6">{t('title')}</h2>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         <div className="space-y-8">
           {/* DATE SELECTION */}
           <section>
-            <label className="text-[9px] font-black text-taupe/40 uppercase tracking-[0.2em] block mb-4">01. Select Preferred Date</label>
+            <label className="text-[9px] font-black text-taupe/40 uppercase tracking-[0.2em] block mb-4">{t('step_date')}</label>
             <div className="flex gap-3 overflow-x-auto pb-3 no-scrollbar">
               {[...Array(7)].map((_, i) => {
                 const d = new Date(); d.setDate(d.getDate() + i);
@@ -208,7 +211,7 @@ export default function UnifiedBookingFlow({ venue, services, totalPrice, staff,
                     }`}
                   >
                     <span className={`text-[9px] font-black uppercase tracking-tighter ${active ? 'opacity-60' : 'opacity-40'}`}>
-                      {d.toLocaleDateString('en-US', { weekday: 'short' })}
+                      {d.toLocaleDateString(locale, { weekday: 'short' })}
                     </span>
                     <span className="text-xl font-black mt-1">{d.getDate()}</span>
                   </button>
@@ -219,7 +222,7 @@ export default function UnifiedBookingFlow({ venue, services, totalPrice, staff,
 
           {/* STAFF SELECTION */}
           <section>
-            <label className="text-[9px] font-black text-taupe/40 uppercase tracking-[0.2em] block mb-4">02. Choose Your Expert</label>
+            <label className="text-[9px] font-black text-taupe/40 uppercase tracking-[0.2em] block mb-4">{t('step_expert')}</label>
             <div className="grid grid-cols-2 gap-3">
               <button 
                 onClick={() => { setSelectedStaffId('any'); setSelectedSlot(null); }}
@@ -229,7 +232,7 @@ export default function UnifiedBookingFlow({ venue, services, totalPrice, staff,
                     : 'border-borderSoft bg-white text-taupe hover:border-gold'
                 }`}
               >
-                Any Professional
+                {t('any_pro')}
               </button>
               {staff.map(emp => (
                 <button 
@@ -251,7 +254,7 @@ export default function UnifiedBookingFlow({ venue, services, totalPrice, staff,
         {/* TIME GRID */}
         <section>
           <label className="text-[9px] font-black text-taupe/40 uppercase tracking-[0.2em] block mb-4">
-            03. Pick Available Time ({totalNeededMinutes} mins)
+            {t('step_time', { count: totalNeededMinutes })}
           </label>
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
             {timeSlots.map(slot => {
@@ -280,10 +283,10 @@ export default function UnifiedBookingFlow({ venue, services, totalPrice, staff,
           </div>
           <div className="mt-6 flex items-center gap-5 text-[8px] font-black uppercase tracking-widest text-taupe/40">
              <span className="flex items-center gap-1.5">
-               <div className="w-2 h-2 rounded-full bg-linen" /> Unavailable
+               <div className="w-2 h-2 rounded-full bg-linen" /> {t('unavailable')}
              </span>
              <span className="flex items-center gap-1.5">
-               <div className="w-2 h-2 rounded-full border border-borderSoft" /> Available
+               <div className="w-2 h-2 rounded-full border border-borderSoft" /> {t('available')}
              </span>
           </div>
         </section>
@@ -300,12 +303,12 @@ export default function UnifiedBookingFlow({ venue, services, totalPrice, staff,
           >
             <div className="absolute top-0 right-0 w-48 h-48 bg-gold opacity-5 rounded-full blur-3xl -mr-24 -mt-24" />
             <div className="z-10 text-center md:text-left">
-              <p className="text-[9px] font-black text-gold uppercase tracking-[0.3em]">Confirmation Summary</p>
+              <p className="text-[9px] font-black text-gold uppercase tracking-[0.3em]">{t('summary_title')}</p>
               <h4 className="text-2xl font-serif font-bold mt-1 whitespace-nowrap">
-                {new Date(selectedDateISO).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })} • {selectedSlot}
+                {new Date(selectedDateISO).toLocaleDateString(locale, { day: 'numeric', month: 'short' })} • {selectedSlot}
               </h4>
               <p className="text-xs font-bold opacity-60 mt-1 uppercase tracking-widest">
-                {services.length} Services • ₹{totalPrice}
+                {t('summary_desc', { servicesCount: services.length, totalPrice: totalPrice })}
               </p>
             </div>
             
@@ -314,7 +317,7 @@ export default function UnifiedBookingFlow({ venue, services, totalPrice, staff,
               disabled={isSubmitting}
               className="z-10 w-full md:w-auto px-10 py-5 bg-goldDark text-white rounded-2xl font-black uppercase tracking-widest shadow-xl hover:bg-white hover:text-cocoa transition-all duration-500 flex items-center justify-center gap-3 group text-[11px]"
             >
-              {isSubmitting ? 'Confirming...' : 'Complete Booking'} 
+              {isSubmitting ? t('confirming') : t('complete_booking')} 
               <CheckCircle2 className="w-5 h-5 transition-transform group-hover:scale-125" />
             </button>
           </motion.div>

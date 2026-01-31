@@ -2,10 +2,11 @@
 'use client';
 
 import { ArrowLeft, MapPin, Star, Heart } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/app/routing';
 import { Venue } from '@/types/venue';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useTranslations } from 'next-intl';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -15,6 +16,7 @@ interface VenueHeaderProps {
 
 export default function VenueHeader({ venue }: VenueHeaderProps) {
   const router = useRouter();
+  const t = useTranslations('VenueHeader');
   const [isFavorite, setIsFavorite] = useState(false);
   const [loadingFav, setLoadingFav] = useState(false);
 
@@ -41,7 +43,7 @@ export default function VenueHeader({ venue }: VenueHeaderProps) {
     const userData = localStorage.getItem('salon_user');
 
     if (!token || !userData) {
-      alert("Please login to save favorites");
+      alert(t('login_required_fav'));
       return;
     }
 
@@ -68,7 +70,7 @@ export default function VenueHeader({ venue }: VenueHeaderProps) {
             onClick={() => router.back()} 
             className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-cocoa/50 hover:text-cocoa transition-colors"
           >
-            <ArrowLeft className="w-4 h-4" /> Back
+            <ArrowLeft className="w-4 h-4" /> {t('back')}
           </button>
 
           <button 
@@ -81,7 +83,7 @@ export default function VenueHeader({ venue }: VenueHeaderProps) {
             }`}
           >
             <Heart className={`w-3.5 h-3.5 transition-transform group-hover/heart:scale-110 ${isFavorite ? 'fill-current' : ''}`} />
-            <span className="text-[9px] font-black uppercase tracking-widest">{isFavorite ? 'Saved' : 'Save'}</span>
+            <span className="text-[9px] font-black uppercase tracking-widest">{t(isFavorite ? 'saved' : 'save')}</span>
           </button>
         </div>
         
@@ -101,7 +103,7 @@ export default function VenueHeader({ venue }: VenueHeaderProps) {
               <Star className="w-3 h-3 fill-current" />
             </div>
             <span className="text-[9px] font-black uppercase tracking-widest text-cocoa/40">
-              Top Rated
+              {t('top_rated')}
             </span>
           </div>
         </div>

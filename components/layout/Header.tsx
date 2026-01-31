@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { Link, useRouter, usePathname } from '@/app/routing'; // Use localized navigation
+import { useSearchParams } from 'next/navigation';
 import {
   MapPin,
   Menu,
@@ -14,8 +14,10 @@ import {
   LayoutGrid,
   Check,
   ChevronDown,
-  User
+  User,
+  Globe
 } from 'lucide-react';
+import { useTranslations, useLocale } from 'next-intl';
 
 // --- TYPES ---
 type User = {
@@ -32,15 +34,15 @@ type NavLink = {
 };
 
 // --- CONSTANTS ---
-const CITIES = ["Mumbai", "Delhi NCR", "Bangalore", "Pune", "Hyderabad", "Chennai"];
+const CITIES_EN = ["Mumbai", "Delhi NCR", "Bangalore", "Pune", "Hyderabad", "Chennai"];
 const LOCATION_STORAGE_KEY = 'cutpoint_location';
-const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_MAP_API;
-
 
 export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const t = useTranslations('Header');
+  const locale = useLocale();
 
   // --- STATE ---
   const [isScrolled, setIsScrolled] = useState(false);
@@ -49,16 +51,15 @@ export default function Header() {
   // Dropdown States
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isLocationOpen, setIsLocationOpen] = useState(false);
-  const [isMobileLocationExpanded, setIsMobileLocationExpanded] = useState(false); // ✅ New state for mobile dropdown
+  const [isLangOpen, setIsLangOpen] = useState(false); // ✅ Language dropdown
+  const [isMobileLocationExpanded, setIsMobileLocationExpanded] = useState(false);
   const [fullAddress, setFullAddress] = useState<string | null>(null);
-
 
   const [location, setLocation] = useState(() => {
     if (typeof window === 'undefined') return 'Mumbai';
     const stored = localStorage.getItem(LOCATION_STORAGE_KEY);
-    return stored && CITIES.includes(stored) ? stored : 'Mumbai';
+    return stored && CITIES_EN.includes(stored) ? stored : 'Mumbai';
   });
-  const [searchQuery, setSearchQuery] = useState('');
   const [user, setUser] = useState<User | null>(() => {
     if (typeof window === 'undefined') return null;
     try {
@@ -75,26 +76,33 @@ export default function Header() {
   // --- REFS ---
   const profileRef = useRef<HTMLDivElement>(null);
   const locationRef = useRef<HTMLDivElement>(null);
+  const langRef = useRef<HTMLDivElement>(null);
 
   // --- NAVIGATION LINKS ---
   const discoveryLinks: NavLink[] = [
-    { name: 'Home', href: '/', type: 'exact' },
+    { name: t('nav.home'), href: '/', type: 'exact' },
     {
-      name: 'Salon',
+      name: t('nav.salon'),
       href: `/search?cat=salon&loc=${encodeURIComponent(location)}`,
       type: 'query',
       value: 'salon',
     },
     {
-      name: 'Spa',
+      name: t('nav.spa'),
       href: `/search?cat=spa&loc=${encodeURIComponent(location)}`,
       type: 'query',
       value: 'spa',
     },
-    { name: 'Offers', href: '/offers', type: 'path' },
-    { name: 'Trends', href: '/trends', type: 'path' },
+    { name: t('nav.offers'), href: '/offers', type: 'path' },
+    { name: t('nav.trends'), href: '/trends', type: 'path' },
   ];
 
+  const handleLangChange = (newLocale: string) => {
+    const currentParams = searchParams.toString();
+    const newPath = currentParams ? `${pathname}?${currentParams}` : pathname;
+    router.replace(newPath, { locale: newLocale });
+    setIsLangOpen(false);
+  };
 
   // --- ACTIVE LOGIC ---
   const isActive = (link: NavLink) => {
@@ -127,7 +135,6 @@ export default function Header() {
     window.addEventListener('scroll', handleScroll);
     window.addEventListener('storage', syncUser);
 
-    // 🔴 AUTO FETCH LIVE LOCATION (ONLY IF NOT ALREADY STORED)
     if (typeof window !== 'undefined') {
       const storedLocation = localStorage.getItem(LOCATION_STORAGE_KEY);
       if (!storedLocation) {
@@ -135,7 +142,6 @@ export default function Header() {
       }
     }
 
-    // Unified Click Outside Handler
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as Node;
       if (profileRef.current && !profileRef.current.contains(target)) {
@@ -143,6 +149,9 @@ export default function Header() {
       }
       if (locationRef.current && !locationRef.current.contains(target)) {
         setIsLocationOpen(false);
+      }
+      if (langRef.current && !langRef.current.contains(target)) {
+        setIsLangOpen(false);
       }
     };
 
@@ -154,16 +163,6 @@ export default function Header() {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
-
-
-  // --- HANDLERS ---
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery)}&loc=${location}`);
-      setIsMobileOpen(false);
-    }
-  };
 
   const handleLogout = () => {
     localStorage.removeItem('salon_user');
@@ -179,7 +178,7 @@ export default function Header() {
     localStorage.setItem(LOCATION_STORAGE_KEY, city);
     window.dispatchEvent(new CustomEvent('cutpoint_location_change', { detail: city }));
     setIsLocationOpen(false);
-    setIsMobileLocationExpanded(false); // Close mobile drawer dropdown too
+    setIsMobileLocationExpanded(false);
     if (pathname === '/search') {
       const params = new URLSearchParams(Array.from(searchParams.entries()));
       params.set('loc', city);
@@ -189,89 +188,42 @@ export default function Header() {
 
 
   const fetchLiveLocation = async () => {
-  if (!navigator.geolocation) {
-    console.warn('Geolocation not supported');
-    return;
-  }
+  if (!navigator.geolocation) return;
 
   navigator.geolocation.getCurrentPosition(
     async (position) => {
       const { latitude, longitude } = position.coords;
-
-      console.log('📍 GPS Coordinates:', { latitude, longitude });
-
       try {
         const res = await fetch(
           `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.NEXT_PUBLIC_MAP_API}`
         );
-
         const data = await res.json();
-
-        console.log('🧭 FULL GEOCODE RESPONSE:', data);
-
         const primaryResult = data.results?.[0];
-        if (!primaryResult) {
-          console.warn('❌ No geocode result found');
-          return;
-        }
+        if (!primaryResult) return;
 
         const formattedAddress = primaryResult.formatted_address;
         const components = primaryResult.address_components || [];
 
-        console.log('🏠 FORMATTED ADDRESS:', formattedAddress);
-
-        console.table(
-          components.map((c: any) => ({
-            long_name: c.long_name,
-            short_name: c.short_name,
-            types: c.types.join(', '),
-          }))
-        );
-
-        // ✅ PRIORITY: locality → sublocality → admin area
         const cityComponent =
           components.find((c: any) => c.types.includes('locality')) ||
-          components.find((c: any) =>
-            c.types.includes('sublocality_level_1')
-          ) ||
-          components.find((c: any) =>
-            c.types.includes('administrative_area_level_2')
-          );
+          components.find((c: any) => c.types.includes('sublocality_level_1')) ||
+          components.find((c: any) => c.types.includes('administrative_area_level_2'));
 
-        if (!cityComponent) {
-          console.warn('❌ City not found in Google response');
-          return;
-        }
+        if (!cityComponent) return;
 
         const detectedCity = cityComponent.long_name;
+        const finalCity = detectedCity === 'Navi Mumbai' ? 'Mumbai' : detectedCity;
 
-        // ✅ NORMALIZE FOR BACKEND SEARCH
-        const finalCity =
-          detectedCity === 'Navi Mumbai' ? 'Mumbai' : detectedCity;
-
-        console.log('✅ DETECTED CITY:', detectedCity);
-        console.log('🎯 FINAL CITY USED:', finalCity);
-
-        // ✅ UPDATE HEADER STATE
         setLocation(finalCity);
         if (formattedAddress) {
           setFullAddress(formattedAddress);
           localStorage.setItem('cutpoint_full_address', formattedAddress);
         }
-
         localStorage.setItem(LOCATION_STORAGE_KEY, finalCity);
+        window.dispatchEvent(new CustomEvent('cutpoint_location_change', { detail: finalCity }));
 
-        window.dispatchEvent(
-          new CustomEvent('cutpoint_location_change', {
-            detail: finalCity,
-          })
-        );
-
-        // ✅ REFRESH SEARCH PAGE IF USER IS THERE
         if (pathname === '/search') {
-          const params = new URLSearchParams(
-            Array.from(searchParams.entries())
-          );
+          const params = new URLSearchParams(Array.from(searchParams.entries()));
           params.set('loc', finalCity);
           router.push(`/search?${params.toString()}`);
         }
@@ -280,43 +232,20 @@ export default function Header() {
       }
     },
     (error) => {
-      console.warn('📍 Geolocation denied or failed:', error);
-
-      // ✅ FALLBACK (NO CRASH)
-      const fallbackCity =
-        localStorage.getItem(LOCATION_STORAGE_KEY) || 'Mumbai';
-
-      const fallbackAddress =
-        localStorage.getItem('cutpoint_full_address') || fallbackCity;
-
+      const fallbackCity = localStorage.getItem(LOCATION_STORAGE_KEY) || 'Mumbai';
       setLocation(fallbackCity);
-      setFullAddress(fallbackAddress);
-
-      localStorage.setItem(LOCATION_STORAGE_KEY, fallbackCity);
-
-      console.info('➡️ Falling back to:', fallbackCity);
     },
-    {
-      enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 0,
-    }
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
   );
 };
 
-
-
-
-  // --- STYLING VARS ---
   const isHome = pathname === '/';
-
   const headerClasses = `fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isHome && !isScrolled
     ? 'bg-transparent py-4 border-transparent'
     : 'bg-sand/95 backdrop-blur-md border-b border-borderSoft shadow-sm py-3'
     }`;
 
-  const linkBaseClass = `text-sm font-bold uppercase tracking-wide transition-all duration-200 relative pb-1 ${isHome && !isScrolled ? 'text-cocoa hover:text-goldDark' : 'text-cocoa hover:text-goldDark'
-    }`;
+  const linkBaseClass = `text-sm font-bold uppercase tracking-wide transition-all duration-200 relative pb-1 text-cocoa hover:text-goldDark`;
 
   return (
     <header className={headerClasses}>
@@ -330,33 +259,30 @@ export default function Header() {
             </span>
           </Link>
 
-          {/* DESKTOP LOCATION DROPDOWN (Hidden on Mobile) */}
           <div className="relative hidden md:block" ref={locationRef}>
             <button
-              onClick={fetchLiveLocation}
-              className="flex items-center gap-2 ..."
+              onClick={() => setIsLocationOpen(!isLocationOpen)}
+              className="flex items-center gap-2 text-xs font-bold text-cocoa hover:text-goldDark transition-colors"
             >
               <MapPin className="w-4 h-4 text-goldDark" />
-              <span className="truncate max-w-[180px] text-left leading-tight">
-                {fullAddress ? fullAddress : location}
+              <span className="truncate max-w-[150px] text-left">
+                {fullAddress ? fullAddress : t(`cities.${location.toLowerCase().replace(/ /g, '_')}`, { defaultValue: location })}
               </span>
-
-              <span className={`text-xs opacity-60 transition-transform duration-200 ${isLocationOpen ? 'rotate-180' : ''}`}>▼</span>
+              <ChevronDown className={`w-3 h-3 transition-transform ${isLocationOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {isLocationOpen && (
-              <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-1 animate-in fade-in zoom-in-95 origin-top-left z-50">
+              <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-1 origin-top-left z-50">
                 <div className="px-3 py-2 text-xs font-bold text-taupe uppercase tracking-wider border-b border-gray-50">
-                  Select City
+                  {t('select_city')}
                 </div>
-                {CITIES.map((city) => (
+                {CITIES_EN.map((city) => (
                   <button
                     key={city}
                     onClick={() => handleLocationSelect(city)}
-                    className={`w-full text-left px-4 py-2.5 text-sm flex items-center justify-between hover:bg-sand/50 transition-colors ${location === city ? 'text-goldDark font-bold bg-sand/30' : 'text-cocoa'
-                      }`}
+                    className={`w-full text-left px-4 py-2.5 text-sm flex items-center justify-between hover:bg-sand/50 transition-colors ${location === city ? 'text-goldDark font-bold bg-sand/30' : 'text-cocoa'}`}
                   >
-                    {city}
+                    {t(`cities.${city.toLowerCase().replace(/ /g, '_')}`, { defaultValue: city })}
                     {location === city && <Check className="w-3.5 h-3.5" />}
                   </button>
                 ))}
@@ -371,13 +297,13 @@ export default function Header() {
             const active = isActive(item);
             return (
               <Link
-                key={item.name}
+                key={item.href}
                 href={item.href}
                 className={`${linkBaseClass} ${active ? 'text-goldDark' : ''}`}
               >
                 {item.name}
                 {active && (
-                  <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gold rounded-full animate-in fade-in zoom-in duration-300" />
+                  <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gold rounded-full" />
                 )}
               </Link>
             );
@@ -387,35 +313,34 @@ export default function Header() {
         {/* ================= RIGHT: ACTIONS ================= */}
         <div className="flex items-center gap-3 xl:gap-5">
 
-          {/* Desktop Search
-          <form onSubmit={handleSearch} className="hidden md:block relative group">
-            <input 
-              type="text" 
-              placeholder="Search..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={`w-32 focus:w-56 lg:focus:w-64 text-sm px-4 py-2 pl-9 rounded-full focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all duration-300 shadow-sm text-cocoa placeholder:text-taupe/70 ${
-                isHome && !isScrolled 
-                  ? 'bg-white/90 border-transparent' 
-                  : 'bg-white border-gray-200'
-              }`}
-            />
-            <Search className="w-4 h-4 text-taupe absolute left-3 top-2.5 pointer-events-none" />
-          </form> */}
+          {/* LANGUAGE SELECTOR */}
+          <div className="relative hidden md:block" ref={langRef}>
+            <button
+              onClick={() => setIsLangOpen(!isLangOpen)}
+              className="flex items-center gap-2 p-2 rounded-full hover:bg-sand/50 transition-colors text-cocoa"
+            >
+              <Globe className="w-5 h-5" />
+              <span className="text-xs font-bold uppercase">{locale}</span>
+            </button>
+            {isLangOpen && (
+              <div className="absolute top-full right-0 mt-2 w-32 bg-white rounded-xl shadow-xl border border-gray-100 py-1 origin-top-right z-50">
+                <button onClick={() => handleLangChange('en')} className={`w-full text-left px-4 py-2 text-sm hover:bg-sand/50 ${locale === 'en' ? 'font-bold text-goldDark' : 'text-cocoa'}`}>English</button>
+                <button onClick={() => handleLangChange('hi')} className={`w-full text-left px-4 py-2 text-sm hover:bg-sand/50 ${locale === 'hi' ? 'font-bold text-goldDark' : 'text-cocoa'}`}>हिंदी</button>
+                <button onClick={() => handleLangChange('mr')} className={`w-full text-left px-4 py-2 text-sm hover:bg-sand/50 ${locale === 'mr' ? 'font-bold text-goldDark' : 'text-cocoa'}`}>मराठी</button>
+              </div>
+            )}
+          </div>
 
-          {/* Desktop Book Now */}
           <Link
             href={`/search?cat=all&loc=${encodeURIComponent(location)}`}
             className={`hidden lg:flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold shadow-soft transition-transform hover:scale-105 active:scale-95 ${isHome && !isScrolled
               ? 'bg-cocoa text-sand hover:bg-taupe'
-              : 'bg-gradient-to-r from-gold to-goldDark text-white hover:brightness-110'
-              }`}
+              : 'bg-gradient-to-r from-gold to-goldDark text-white hover:brightness-110'}`}
           >
             <CalendarCheck className="w-4 h-4" />
-            <span>Book Now</span>
+            <span>{t('book_now')}</span>
           </Link>
 
-          {/* User Profile / Auth */}
           {user ? (
             <div className="relative" ref={profileRef}>
               <div className="flex items-center gap-3">
@@ -426,108 +351,86 @@ export default function Header() {
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
                   className="flex items-center gap-2 focus:outline-none"
                 >
-                  <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm border-2 transition-all ${isHome && !isScrolled
-                    ? 'bg-white text-cocoa border-transparent hover:border-cocoa'
-                    : 'bg-cocoa text-sand border-transparent hover:border-gold'
-                    }`}>
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm border-2 transition-all ${isHome && !isScrolled ? 'bg-white text-cocoa border-transparent hover:border-cocoa' : 'bg-cocoa text-sand border-transparent hover:border-gold'}`}>
                     {user.name.charAt(0).toUpperCase()}
                   </div>
                 </button>
               </div>
 
               {isProfileOpen && (
-                <div className="absolute right-0 mt-3 w-60 bg-white rounded-xl shadow-xl border border-gray-100 p-2 animate-in fade-in zoom-in-95 origin-top-right">
-
-                  {/* USER INFO */}
+                <div className="absolute right-0 mt-3 w-60 bg-white rounded-xl shadow-xl border border-gray-100 p-2 origin-top-right">
                   <div className="px-3 py-2 border-b border-gray-100 mb-1">
-                    <p className="text-sm font-bold text-gray-900 truncate">
-                      {user.name}
-                    </p>
-                    <p className="text-xs text-gray-500 capitalize">
-                      Customer
-                    </p>
+                    <p className="text-sm font-bold text-gray-900 truncate">{user.name}</p>
+                    <p className="text-xs text-gray-500 capitalize">{t('customer')}</p>
                   </div>
-
-                  {/* DASHBOARD */}
-                  <Link
-                    href="/customer"
-                    className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
-                    onClick={() => setIsProfileOpen(false)}
-                  >
+                  <Link href="/customer" className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors" onClick={() => setIsProfileOpen(false)}>
                     <LayoutGrid className="w-4 h-4" />
-                    Dashboard
+                    {t('dashboard')}
                   </Link>
-
-                  {/* MY APPOINTMENTS */}
-                  <Link
-                    href="/customer/appointment"
-                    className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
-                    onClick={() => setIsProfileOpen(false)}
-                  >
+                  <Link href="/customer/appointment" className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors" onClick={() => setIsProfileOpen(false)}>
                     <CalendarCheck className="w-4 h-4" />
-                    My Appointments
+                    {t('my_appointments')}
                   </Link>
-
-
-                  {/* SIGN OUT */}
-                  <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg mt-1 transition-colors"
-                  >
+                  <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg mt-1 transition-colors">
                     <LogOut className="w-4 h-4" />
-                    Sign Out
+                    {t('sign_out')}
                   </button>
-
                 </div>
               )}
-
             </div>
           ) : (
             <div className={`flex items-center gap-3 pl-2 lg:border-l ${isHome && !isScrolled ? 'border-cocoa/20' : 'border-gray-300'}`}>
               <Link href="/auth/login/" className="hidden md:block text-sm font-bold hover:text-goldDark whitespace-nowrap text-cocoa transition-colors">
-                Log In
+                {t('log_in')}
               </Link>
-              {/* ✅ HIDDEN ON MOBILE to avoid duplicate button in header */}
               <Link href="/auth/register" className="hidden md:block bg-cocoa text-linen px-5 py-2 rounded-lg text-sm font-bold hover:bg-taupe transition-colors shadow-sm whitespace-nowrap">
-                Sign Up
+                {t('sign_up')}
               </Link>
             </div>
           )}
 
-          {/* Mobile Menu Toggle */}
           <button onClick={() => setIsMobileOpen(!isMobileOpen)} className="lg:hidden p-1 text-cocoa hover:text-goldDark transition-colors">
             {isMobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
       </div>
 
-      {/* ================= MOBILE MENU DRAWER ================= */}
       {isMobileOpen && (
-        <div className="lg:hidden bg-white/95 backdrop-blur-xl border-t border-gray-100 p-4 shadow-2xl absolute w-full animate-in slide-in-from-top-5 h-[calc(100vh-60px)] overflow-y-auto">
+        <div className="lg:hidden bg-white/95 backdrop-blur-xl border-t border-gray-100 p-4 shadow-2xl absolute w-full h-[calc(100vh-60px)] overflow-y-auto">
+          <div className="mb-4 space-y-3">
+             {/* Mobile Locale Selector */}
+             <div className="flex gap-2">
+              {['en', 'hi', 'mr'].map((l) => (
+                <button
+                  key={l}
+                  onClick={() => { handleLangChange(l); setIsMobileOpen(false); }}
+                  className={`flex-1 py-2 rounded-lg border text-xs font-bold uppercase transition-colors ${locale === l ? 'bg-goldDark text-white border-goldDark' : 'text-cocoa border-gray-200 hover:bg-sand/30'}`}
+                >
+                  {l === 'en' ? 'EN' : l === 'hi' ? 'हिंदी' : 'मराठी'}
+                </button>
+              ))}
+            </div>
 
-          {/* ✅ FIXED MOBILE LOCATION DROPDOWN */}
-          <div className="mb-4">
             <button
               onClick={() => setIsMobileLocationExpanded(!isMobileLocationExpanded)}
               className="w-full flex items-center justify-between bg-white border border-gold/30 p-3 rounded-xl shadow-sm text-cocoa font-bold text-sm"
             >
               <span className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-goldDark" />
-                {location}
+                {t(`cities.${location.toLowerCase().replace(/ /g, '_')}`, { defaultValue: location })}
               </span>
               <ChevronDown className={`w-4 h-4 transition-transform ${isMobileLocationExpanded ? 'rotate-180' : ''}`} />
             </button>
 
             {isMobileLocationExpanded && (
-              <div className="mt-2 bg-white border border-borderSoft rounded-xl overflow-hidden animate-in fade-in slide-in-from-top-2">
-                {CITIES.map(city => (
+              <div className="mt-2 bg-white border border-borderSoft rounded-xl overflow-hidden">
+                {CITIES_EN.map(city => (
                   <button
                     key={city}
                     onClick={() => handleLocationSelect(city)}
-                    className={`w-full text-left px-4 py-3 text-sm border-b border-gray-50 last:border-0 hover:bg-sand/30 flex justify-between items-center ${location === city ? 'font-bold text-goldDark bg-sand/20' : 'text-cocoa'
-                      }`}
+                    className={`w-full text-left px-4 py-3 text-sm border-b border-gray-50 last:border-0 hover:bg-sand/30 flex justify-between items-center ${location === city ? 'font-bold text-goldDark bg-sand/20' : 'text-cocoa'}`}
                   >
-                    {city}
+                    {t(`cities.${city.toLowerCase().replace(/ /g, '_')}`, { defaultValue: city })}
                     {location === city && <Check className="w-3.5 h-3.5" />}
                   </button>
                 ))}
@@ -536,42 +439,35 @@ export default function Header() {
           </div>
 
           <nav className="space-y-1">
-            {discoveryLinks.map((item) => {
-              const active = isActive(item);
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  // ✅ COMPACT SIZING: Reduced padding (py-2) and font size
-                  className={`flex items-center justify-between px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${active ? 'bg-sand text-cocoa font-bold border-l-4 border-gold' : 'text-gray-600 hover:bg-gray-50'
-                    }`}
-                  onClick={() => setIsMobileOpen(false)}
-                >
-                  {item.name}
-                </Link>
-              );
-            })}
+            {discoveryLinks.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center justify-between px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive(item) ? 'bg-sand text-cocoa font-bold border-l-4 border-gold' : 'text-gray-600 hover:bg-gray-50'}`}
+                onClick={() => setIsMobileOpen(false)}
+              >
+                {item.name}
+              </Link>
+            ))}
 
             <div className="my-4 border-t border-gray-100"></div>
 
-            {/* Book Now - Compact */}
             <Link
               href={`/search?cat=all&loc=${encodeURIComponent(location)}`}
               onClick={() => setIsMobileOpen(false)}
               className="flex items-center justify-center gap-2 w-full bg-goldDark text-white py-2.5 rounded-xl font-bold text-sm shadow-soft mb-3 hover:bg-cocoa transition-colors"
             >
               <CalendarCheck className="w-4 h-4" />
-              Book An Appointment
+              {t('book_now')}
             </Link>
 
-            {/* Auth Buttons - Visible Only in Drawer for Mobile */}
             {!user && (
               <div className="grid grid-cols-2 gap-3">
                 <Link href="/auth/login" onClick={() => setIsMobileOpen(false)} className="text-center py-2.5 border border-borderSoft rounded-xl font-bold text-sm text-cocoa">
-                  Log In
+                  {t('log_in')}
                 </Link>
                 <Link href="/auth/register" onClick={() => setIsMobileOpen(false)} className="text-center py-2.5 bg-cocoa text-white rounded-xl font-bold text-sm">
-                  Sign Up
+                  {t('sign_up')}
                 </Link>
               </div>
             )}
@@ -581,3 +477,4 @@ export default function Header() {
     </header>
   );
 }
+

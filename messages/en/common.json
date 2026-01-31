@@ -1,0 +1,124 @@
+{
+  "Header": {
+    "nav": {
+      "home": "Home",
+      "salon": "Salon",
+      "spa": "Spa",
+      "offers": "Offers",
+      "trends": "Trends"
+    },
+    "select_city": "Select City",
+    "cities": {
+      "mumbai": "Mumbai",
+      "delhi_ncr": "Delhi NCR",
+      "bangalore": "Bangalore",
+      "pune": "Pune",
+      "hyderabad": "Hyderabad",
+      "chennai": "Chennai"
+    },
+    "book_now": "Book Now",
+    "customer": "Customer",
+    "dashboard": "Dashboard",
+    "my_appointments": "My Appointments",
+    "sign_out": "Sign Out",
+    "log_in": "Log In",
+    "sign_up": "Sign Up"
+  },
+  "Search": {
+    "discovery": "Discovery",
+    "results_for": "Results for \"{query}\"",
+    "browse_experiences": "Browse Experiences",
+    "showing_results": "Showing {count} premium destinations in {location}",
+    "refine": "Refine",
+    "no_destinations_found": "No destinations found",
+    "no_results_desc": "We couldn't find matches in \"{location}\". Try a different location or general search if you are outside current bounds.",
+    "reset_filters": "Reset All Filters"
+  },
+  "Footer": {
+    "brand_desc": "Where style meets precision. Experience premium hair care and spa treatments designed to refine your look and rejuvenate your spirit.",
+    "explore": "Explore",
+    "visit_us": "Visit Us",
+    "location": "Location",
+    "contact": "Contact",
+    "hours": "Hours",
+    "mon_sat": "Mon - Sat: 10:00 AM - 8:00 PM",
+    "sun": "Sun: 11:00 AM - 5:00 PM",
+    "stay_stylish": "Stay Stylish",
+    "newsletter_desc": "Subscribe for exclusive offers and style tips.",
+    "email_placeholder": "Your email address",
+    "subscribe": "Subscribe",
+    "subscribe_policy": "By subscribing, you agree to our Privacy Policy.",
+    "all_rights": "All rights reserved.",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "sitemap": "Sitemap",
+    "nav": {
+      "services": "Our Services",
+      "specialists": "Meet the Stylists",
+      "pricing": "Pricing",
+      "lookbook": "Lookbook",
+      "careers": "Join the Team"
+    }
+  },
+  "Home": {
+    "Hero": {
+      "headline_italic": "Renew, Relax,",
+      "headline_normal": "Rejuvenate",
+      "description": "Experience the Finest Wellness Sanctuaries",
+      "book_now_btn": "Book Your Appointment Now",
+      "booking_subtext": "Instant Confirmation • Curated Luxury Experts"
+    },
+    "Services": {
+      "title": "Our",
+      "title_italic": "Signature",
+      "subtitle": "Services",
+      "massage_therapy": {
+        "title": "Massage Therapy",
+        "desc": "Discover holistic wellness through our expert spa massages and body treatments."
+      },
+      "hair_styling": {
+        "title": "Hair & Styling",
+        "desc": "Transform your look with our professional hair care, styling, and organic treatments."
+      },
+      "beauty_facials": {
+        "title": "Beauty & Facials",
+        "desc": "Deep cleansing and rejuvenating facials designed to bring out your natural glow."
+      },
+      "couple_spa": {
+        "title": "Couple Spa",
+        "desc": "Experience ultimate relaxation together with our curated romantic couples packages."
+      }
+    },
+    "HowItWorks": {
+      "eyebrow": "The Process",
+      "title": "How It Works",
+      "find_sanctuary": {
+        "title": "Find Your Sanctuary",
+        "desc": "Search through our hand-picked collection of top-tier luxury spas and salons."
+      },
+      "effortless_booking": {
+        "title": "Effortless Booking",
+        "desc": "Select your preferred expert and schedule your visit in seconds with instant confirmation."
+      },
+      "experience_bliss": {
+        "title": "Experience Bliss",
+        "desc": "Step into serenity and enjoy a curated wellness experience tailored just for you."
+      }
+    },
+    "Testimonials": {
+      "eyebrow": "Kind Words",
+      "title": "Client Stories"
+    },
+    "Newsletter": {
+      "title": "Find Spas in Your City",
+      "description": "Join our newsletter for exclusive spa offers & wellness tips",
+      "placeholder": "Enter your email address",
+      "subscribe_btn": "Subscribe",
+      "success_msg": "Thank you! Welcome to a world of relaxation. ✨"
+    },
+    "Sections": {
+      "spas_near_you": "Luxury Spas Near You",
+      "salons_near_you": "Premium Salons Near You"
+    }
+  }
+}

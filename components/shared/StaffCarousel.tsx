@@ -1,12 +1,14 @@
 'use client';
 
 import { Employee } from '@/types/venue';
+import { useTranslations } from 'next-intl';
 
 interface StaffCarouselProps {
   staff: Employee[];
 }
 
 export default function StaffCarousel({ staff }: StaffCarouselProps) {
+  const t = useTranslations('Staff');
   if (staff.length === 0) return null;
 
   return (
@@ -30,7 +32,7 @@ export default function StaffCarousel({ staff }: StaffCarouselProps) {
               {member.role}
             </p>
             <p className="text-[9px] text-taupe font-bold mt-1.5 opacity-60">
-              {member.experience} Years Exp.
+              {t('exp_years', { count: member.experience })}
             </p>
           </div>
           

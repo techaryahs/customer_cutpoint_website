@@ -1,6 +1,9 @@
-import Link from 'next/link';
+import { Link } from '@/app/routing';
+import { useTranslations } from 'next-intl';
 
 export default function Footer() {
+  const t = useTranslations('Footer');
+
   return (
     <footer className="bg-cocoa text-sand pt-20 pb-10 border-t border-taupe/20">
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
@@ -12,7 +15,7 @@ export default function Footer() {
               CUT <span className="text-gold">POINT</span>
             </h3>
             <p className="mt-4 text-sand/80 text-sm leading-relaxed max-w-xs">
-              Where style meets precision. Experience premium hair care and spa treatments designed to refine your look and rejuvenate your spirit.
+              {t('brand_desc')}
             </p>
           </div>
           
@@ -32,47 +35,47 @@ export default function Footer() {
 
         {/* 2. Quick Links */}
         <div>
-          <h4 className="text-gold font-medium mb-6 tracking-wide">Explore</h4>
+          <h4 className="text-gold font-medium mb-6 tracking-wide">{t('explore')}</h4>
           <ul className="space-y-3 text-sm text-sand/80">
-            <li><Link href="/services" className="hover:text-gold transition-colors duration-200 block">Our Services</Link></li>
-            <li><Link href="/specialists" className="hover:text-gold transition-colors duration-200 block">Meet the Stylists</Link></li>
-            <li><Link href="/pricing" className="hover:text-gold transition-colors duration-200 block">Pricing</Link></li>
-            <li><Link href="/gallery" className="hover:text-gold transition-colors duration-200 block">Lookbook</Link></li>
-            <li><Link href="/careers" className="hover:text-gold transition-colors duration-200 block">Join the Team</Link></li>
+            <li><Link href="/services" className="hover:text-gold transition-colors duration-200 block">{t('nav.services')}</Link></li>
+            <li><Link href="/specialists" className="hover:text-gold transition-colors duration-200 block">{t('nav.specialists')}</Link></li>
+            <li><Link href="/pricing" className="hover:text-gold transition-colors duration-200 block">{t('nav.pricing')}</Link></li>
+            <li><Link href="/gallery" className="hover:text-gold transition-colors duration-200 block">{t('nav.lookbook')}</Link></li>
+            <li><Link href="/careers" className="hover:text-gold transition-colors duration-200 block">{t('nav.careers')}</Link></li>
           </ul>
         </div>
 
-        {/* 3. Contact & Hours (Production standard requirement) */}
+        {/* 3. Contact & Hours */}
         <div>
-          <h4 className="text-gold font-medium mb-6 tracking-wide">Visit Us</h4>
+          <h4 className="text-gold font-medium mb-6 tracking-wide">{t('visit_us')}</h4>
           <ul className="space-y-4 text-sm text-sand/80">
             <li>
-              <p className="text-linen font-medium mb-1">Location</p>
+              <p className="text-linen font-medium mb-1">{t('location')}</p>
               Gauri Complex, 601, Sector 11,<br />CBD Belapur, Navi Mumbai, Maharashtra 400614
             </li>
             <li>
-              <p className="text-linen font-medium mb-1">Contact</p>
-              <a href="tel:+15559876543" className="hover:text-gold transition-colors block">+91 9619901999</a>
-              <a href="mailto:hello@thecutpoint.com" className="hover:text-gold transition-colors block">info@aryahsworld.com</a>
+              <p className="text-linen font-medium mb-1">{t('contact')}</p>
+              <a href="tel:+919619901999" className="hover:text-gold transition-colors block">+91 9619901999</a>
+              <a href="mailto:info@aryahsworld.com" className="hover:text-gold transition-colors block">info@aryahsworld.com</a>
             </li>
             <li>
-              <p className="text-linen font-medium mb-1">Hours</p>
-              <span className="block">Mon - Sat: 10:00 AM - 8:00 PM</span>
-              <span className="block">Sun: 11:00 AM - 5:00 PM</span>
+              <p className="text-linen font-medium mb-1">{t('hours')}</p>
+              <span className="block">{t('mon_sat')}</span>
+              <span className="block">{t('sun')}</span>
             </li>
           </ul>
         </div>
 
         {/* 4. Newsletter */}
         <div>
-          <h4 className="text-gold font-medium mb-6 tracking-wide">Stay Stylish</h4>
+          <h4 className="text-gold font-medium mb-6 tracking-wide">{t('stay_stylish')}</h4>
           <p className="text-sm text-sand/80 mb-4">
-            Subscribe for exclusive offers and style tips.
+            {t('newsletter_desc')}
           </p>
           <form className="flex flex-col gap-3">
             <input 
               type="email" 
-              placeholder="Your email address" 
+              placeholder={t('email_placeholder')} 
               className="w-full bg-cocoa border border-taupe text-linen placeholder:text-taupe px-4 py-3 rounded-xl focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all text-sm"
               required
             />
@@ -80,10 +83,10 @@ export default function Footer() {
               type="button"
               className="w-full bg-gold text-cocoa font-semibold px-4 py-3 rounded-xl hover:bg-goldDark hover:text-white transition-all duration-300 shadow-lg shadow-black/10"
             >
-              Subscribe
+              {t('subscribe')}
             </button>
             <p className="text-[10px] text-taupe text-center mt-2">
-              By subscribing, you agree to our Privacy Policy.
+              {t('subscribe_policy')}
             </p>
           </form>
         </div>
@@ -91,18 +94,18 @@ export default function Footer() {
 
       {/* Bottom Bar: Copyright & Legal */}
       <div className="max-w-7xl mx-auto px-6 mt-16 pt-8 border-t border-taupe/30 flex flex-col md:flex-row justify-between items-center text-xs text-sand/60">
-        <p>© 2026 The Cut Point. All rights reserved.</p>
+        <p>© 2026 The Cut Point. {t('all_rights')}</p>
         <div className="flex flex-wrap justify-center gap-6 mt-4 md:mt-0">
-          <Link href="/privacy" className="hover:text-gold transition-colors">Privacy Policy</Link>
-          <Link href="/terms" className="hover:text-gold transition-colors">Terms of Service</Link>
-          <Link href="/sitemap" className="hover:text-gold transition-colors">Sitemap</Link>
+          <Link href="/privacy" className="hover:text-gold transition-colors">{t('privacy')}</Link>
+          <Link href="/terms" className="hover:text-gold transition-colors">{t('terms')}</Link>
+          <Link href="/sitemap" className="hover:text-gold transition-colors">{t('sitemap')}</Link>
         </div>
       </div>
     </footer>
   );
 }
 
-// Reusable Social Link Component for clean code
+// Reusable Social Link Component
 function SocialLink({ href, label, children }: { href: string; label: string; children: React.ReactNode }) {
   return (
     <a 

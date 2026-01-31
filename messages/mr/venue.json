@@ -1,0 +1,55 @@
+{
+  "Detail": {
+    "loading": "तुमचा अनुभव सुधारत आहे...",
+    "error_not_found": "सलून तपशील सापडले नाहीत",
+    "error_failed": "सलून लोड करण्यात अयशस्वी. कृपया नंतर पुन्हा प्रयत्न करा.",
+    "error_generic": "काहीतरी चुकले",
+    "available_experts": "उपलब्ध तज्ञ",
+    "curated_services": "क्युरेटेड सेवा",
+    "menu_pricing": "मेनू आणि दर",
+    "options_available": "{count} पर्याय उपलब्ध"
+  },
+  "Spa": {
+    "loading": "तुमचा सुखद अनुभव तयार होत आहे...",
+    "error_not_found": "स्पा तपशील सापडले नाहीत",
+    "available_experts": "आमचे थेरपिस्ट",
+    "curated_services": "सिग्नेचर ट्रीटमेंट",
+    "menu_pricing": "वेलनेस मेनू",
+    "options_available": "{count} उपचार उपलब्ध"
+  },
+  "VenueHeader": {
+    "back": "मागे",
+    "save": "जतन करा",
+    "saved": "जतन केले",
+    "top_rated": "टॉप रेटेड",
+    "login_required_fav": "कृपया आवडी जतन करण्यासाठी लॉगिन करा"
+  },
+  "Staff": {
+    "exp_years": "{count} वर्षांचा अनुभव"
+  },
+  "Services": {
+    "empty": "कोणत्याही सक्रिय सेवा उपलब्ध नाहीत.",
+    "off": "{count}% सवलत",
+    "service": "सेवा",
+    "mins": "{count} मिनिटे",
+    "add_to_booking": "बुकिंगमध्ये जोडा",
+    "remove": "काढून टाका"
+  },
+  "Booking": {
+    "title": "तुमचा अनुभव सुरक्षित करा",
+    "step_date": "०१. पसंतीची तारीख निवडा",
+    "step_expert": "०२. तुमचा तज्ञ निवडा",
+    "step_time": "०३. उपलब्ध वेळ निवडा ({count} मिनिटे)",
+    "any_pro": "कोणताही व्यावसायिक",
+    "unavailable": "अनुपलब्ध",
+    "available": "उपलब्ध",
+    "summary_title": "पुष्टीकरण सारांश",
+    "summary_desc": "{servicesCount} सेवा • ₹{totalPrice}",
+    "confirming": "पुष्टी करत आहे...",
+    "complete_booking": "बुकिंग पूर्ण करा",
+    "success_msg": "अपॉइंटमेंट यशस्वीरित्या बुक झाली!",
+    "login_required": "कृपया बुकिंग सुरू ठेवण्यासाठी लॉगिन करा.",
+    "no_staff": "या स्लॉटसाठी कर्मचारी उपलब्ध नाहीत.",
+    "booking_failed": "बुकिंग अयशस्वी. स्लॉट अनुपलब्ध असू शकतो."
+  }
+}

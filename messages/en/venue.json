@@ -1,0 +1,55 @@
+{
+  "Detail": {
+    "loading": "Refining your experience...",
+    "error_not_found": "Salon details not found",
+    "error_failed": "Failed to load salon. Please try again later.",
+    "error_generic": "Something went wrong",
+    "available_experts": "Available Experts",
+    "curated_services": "Curated Services",
+    "menu_pricing": "Menu & Pricing",
+    "options_available": "{count} Options Available"
+  },
+  "Spa": {
+    "loading": "Preparing your sanctuary...",
+    "error_not_found": "Spa details not found",
+    "available_experts": "Our Therapists",
+    "curated_services": "Signature Treatments",
+    "menu_pricing": "Wellness Menu",
+    "options_available": "{count} Treatments Available"
+  },
+  "VenueHeader": {
+    "back": "Back",
+    "save": "Save",
+    "saved": "Saved",
+    "top_rated": "Top Rated",
+    "login_required_fav": "Please login to save favorites"
+  },
+  "Staff": {
+    "exp_years": "{count} Years Exp."
+  },
+  "Services": {
+    "empty": "No active services available.",
+    "off": "{count}% OFF",
+    "service": "Service",
+    "mins": "{count} min",
+    "add_to_booking": "Add to Booking",
+    "remove": "Remove"
+  },
+  "Booking": {
+    "title": "Secure Your Experience",
+    "step_date": "01. Select Preferred Date",
+    "step_expert": "02. Choose Your Expert",
+    "step_time": "03. Pick Available Time ({count} mins)",
+    "any_pro": "Any Professional",
+    "unavailable": "Unavailable",
+    "available": "Available",
+    "summary_title": "Confirmation Summary",
+    "summary_desc": "{servicesCount} Services • ₹{totalPrice}",
+    "confirming": "Confirming...",
+    "complete_booking": "Complete Booking",
+    "success_msg": "Appointment successfully booked!",
+    "login_required": "Please login to proceed with the booking.",
+    "no_staff": "No staff available for this slot.",
+    "booking_failed": "Booking failed. Slot might be unavailable."
+  }
+}
