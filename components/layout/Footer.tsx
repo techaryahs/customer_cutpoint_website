@@ -94,7 +94,7 @@ export default function Footer() {
 
       {/* Bottom Bar: Copyright & Legal */}
       <div className="max-w-7xl mx-auto px-6 mt-16 pt-8 border-t border-taupe/30 flex flex-col md:flex-row justify-between items-center text-xs text-sand/60">
-        <p>© 2026 The Cut Point. {t('all_rights')}</p>
+        <p>© 2026 The Glow Biz. {t('all_rights')}</p>
         <div className="flex flex-wrap justify-center gap-6 mt-4 md:mt-0">
           <Link href="/privacy" className="hover:text-gold transition-colors">{t('privacy')}</Link>
           <Link href="/terms" className="hover:text-gold transition-colors">{t('terms')}</Link>
