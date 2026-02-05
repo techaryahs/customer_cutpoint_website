@@ -12,7 +12,7 @@ export default function Footer() {
         <div className="space-y-6">
           <div>
             <h3 className="text-3xl font-serif text-linen tracking-wide">
-              CUT <span className="text-gold">POINT</span>
+             GLOW <span className="text-gold">BIZ</span>
             </h3>
             <p className="mt-4 text-sand/80 text-sm leading-relaxed max-w-xs">
               {t('brand_desc')}
