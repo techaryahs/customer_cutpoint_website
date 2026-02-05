@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import { Link, useRouter } from '@/app/routing';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import axios from 'axios';
 
 export default function RegisterCustomer() {
   const router = useRouter();
   const t = useTranslations('Register');
+  const locale = useLocale();
 
   // --- STATE ---
   const [loading, setLoading] = useState(false);
@@ -60,14 +61,14 @@ export default function RegisterCustomer() {
       // Save Data
       localStorage.setItem('salon_token', data.token);
       localStorage.setItem('salon_user', JSON.stringify(data.user));
-      
+
       // 🔥 SAVE COOKIE (AUTH STATE)
       document.cookie = `salon_token=${data.token}; path=/; max-age=604800`;
 
       window.dispatchEvent(new Event('auth-change'));
 
-      // Redirect Customer
-      router.replace('/');
+      // ✅ FULL RELOAD TO SYNC EVERYTHING
+      window.location.href = locale === 'en' ? '/' : `/${locale}`;
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || t('error_failed'));
     } finally {

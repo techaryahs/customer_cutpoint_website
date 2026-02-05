@@ -139,6 +139,7 @@ export default function Header() {
 
     window.addEventListener('scroll', handleScroll);
     window.addEventListener('storage', syncUser);
+    window.addEventListener('auth-change', syncUser);
 
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as Node;
@@ -158,6 +159,7 @@ export default function Header() {
     return () => {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('storage', syncUser);
+      window.removeEventListener('auth-change', syncUser);
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);

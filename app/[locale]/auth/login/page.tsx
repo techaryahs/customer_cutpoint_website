@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { Link, useRouter } from '@/app/routing';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 
 export default function LoginCustomer() {
   const router = useRouter();
   const t = useTranslations('Login');
+  const locale = useLocale();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -84,8 +85,8 @@ export default function LoginCustomer() {
       // ✅ SYNC HEADER / APP STATE
       window.dispatchEvent(new Event('auth-change'));
 
-      // ✅ REDIRECT TO CUSTOMER HOME
-      router.replace('/');
+      // ✅ FULL RELOAD TO SYNC EVERYTHING (SERVER & CLIENT)
+      window.location.href = locale === 'en' ? '/' : `/${locale}`;
     } catch (err: any) {
       setError(err.message || t('error_failed'));
     } finally {
