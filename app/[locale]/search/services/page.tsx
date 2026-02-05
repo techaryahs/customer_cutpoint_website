@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Star, MapPin, Clock, Filter, ChevronDown, Heart } from 'lucide-react';
 import Link from 'next/link';
@@ -85,10 +86,10 @@ const SALONS = [
   }
 ];
 
-export default function SearchPage() {
+function SearchPageContent() {
   const searchParams = useSearchParams();
   const category = searchParams.get('cat'); // 'hair' or 'spa'
-  
+
   // Filter Logic
   const filteredSalons = SALONS.filter(salon => {
     if (category && salon.category !== category) return false;
@@ -97,7 +98,7 @@ export default function SearchPage() {
 
   return (
     <div className="min-h-screen bg-linen">
-      
+
       {/* 1. HEADER: Breadcrumb & Sort */}
       <div className="bg-white border-b border-borderSoft sticky top-20 z-30 px-4 py-3 shadow-sm">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -107,7 +108,7 @@ export default function SearchPage() {
             </h1>
             <p className="text-xs text-taupe mt-1">Showing {filteredSalons.length} results based on your preferences</p>
           </div>
-          
+
           <div className="flex gap-3">
             <button className="flex items-center gap-2 text-xs font-bold text-cocoa border border-borderSoft px-4 py-2 rounded-lg hover:border-gold hover:bg-sand/20 transition-colors">
               Sort: Recommended <ChevronDown className="w-3 h-3" />
@@ -120,7 +121,7 @@ export default function SearchPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-4 gap-8">
-        
+
         {/* 2. SIDEBAR FILTERS (Desktop Only) */}
         <aside className="hidden lg:block space-y-8 h-fit sticky top-40">
           {/* Price Filter */}
@@ -166,13 +167,13 @@ export default function SearchPage() {
           {filteredSalons.map((salon) => (
             <Link href={`/search/salon/${salon.id}`} key={salon.id} className="block group">
               <div className="bg-white rounded-2xl border border-borderSoft overflow-hidden hover:shadow-card hover:border-gold/30 transition-all duration-300 relative">
-                
+
                 {/* Image Section */}
                 <div className="relative h-48 overflow-hidden">
-                  <img 
-                    src={salon.image} 
-                    alt={salon.name} 
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                  <img
+                    src={salon.image}
+                    alt={salon.name}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                   {/* Heart Icon */}
                   <button className="absolute top-3 right-3 bg-white/20 backdrop-blur-md p-2 rounded-full hover:bg-white transition-colors group/btn">
@@ -197,7 +198,7 @@ export default function SearchPage() {
                     </h3>
                     <span className="text-xs font-bold text-cocoa/60">{salon.distance}</span>
                   </div>
-                  
+
                   <p className="text-sm text-taupe flex items-center gap-1.5 mb-3">
                     <MapPin className="w-3.5 h-3.5 text-goldDark" /> {salon.location}
                   </p>
@@ -227,5 +228,13 @@ export default function SearchPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-linen pt-20 text-center">Loading...</div>}>
+      <SearchPageContent />
+    </Suspense>
   );
 }

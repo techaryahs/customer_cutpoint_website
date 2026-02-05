@@ -4,13 +4,13 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import ChatbotWidget from "@/components/chatbot/ChatbotWidget";
 import { MessageCircle } from "lucide-react";
-import {NextIntlClientProvider} from 'next-intl';
-import {getMessages, setRequestLocale} from 'next-intl/server';
-import {routing} from '@/app/routing';
-import {notFound} from 'next/navigation';
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages, setRequestLocale } from 'next-intl/server';
+import { routing } from '@/app/routing';
+import { notFound } from 'next/navigation';
 
 export function generateStaticParams() {
-  return routing.locales.map((locale) => ({locale}));
+  return routing.locales.map((locale) => ({ locale }));
 }
 
 export const metadata: Metadata = {
@@ -18,14 +18,16 @@ export const metadata: Metadata = {
   description: "Premium salon & spa booking and management platform",
 };
 
+import { Suspense } from "react";
+
 export default async function RootLayout({
   children,
   params
 }: {
   children: React.ReactNode;
-  params: Promise<{locale: string}>;
+  params: Promise<{ locale: string }>;
 }) {
-  const {locale} = await params;
+  const { locale } = await params;
 
   // Ensure that the incoming `locale` is valid
   if (!routing.locales.includes(locale as any)) {
@@ -60,7 +62,9 @@ export default async function RootLayout({
               </div>
             </a>
 
-            <Header />
+            <Suspense fallback={<div className="h-16" />}>
+              <Header />
+            </Suspense>
             <main className="flex-1">{children}</main>
             <Footer />
 

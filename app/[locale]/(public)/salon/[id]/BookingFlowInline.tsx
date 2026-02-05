@@ -16,7 +16,7 @@ type Props = {
   services: BookingService[];
   totalPrice: number;
   staff: any[];
-  bookedSlots: Record<string, any[]>; // e.g. {"2026-01-19": [{startTime: "10:30", duration: 60, employeeId: "emp1"}]}
+  bookedSlots: Record<string, any>; // e.g. {"2026-01-19": [{startTime: "10:30", duration: 60, employeeId: "emp1"}]}
 };
 
 export default function BookingFlowInline({ venue, services, totalPrice, staff, bookedSlots }: Props) {
@@ -28,12 +28,12 @@ export default function BookingFlowInline({ venue, services, totalPrice, staff, 
   // Auth States
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [authToken, setAuthToken] = useState<string | null>(null);
-
+  const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
   // 1. Initialize Auth Data from LocalStorage
   useEffect(() => {
     const userData = localStorage.getItem('salon_user');
     const tokenData = localStorage.getItem('salon_token');
-    
+
     if (userData) {
       try {
         const parsed = JSON.parse(userData);
@@ -48,9 +48,9 @@ export default function BookingFlowInline({ venue, services, totalPrice, staff, 
   }, []);
 
   // 2. Helper: Time Calculations
-  const totalNeededMinutes = useMemo(() => 
+  const totalNeededMinutes = useMemo(() =>
     services.reduce((acc, s) => acc + parseInt(s.duration || '0'), 0)
-  , [services]);
+    , [services]);
 
   const timeToMins = (t: string) => {
     const [h, m] = t.split(':').map(Number);
@@ -146,14 +146,14 @@ export default function BookingFlowInline({ venue, services, totalPrice, staff, 
 
     return slots;
   }, [selectedDateISO, selectedStaffId, totalNeededMinutes, bookedSlots, venue, staff, services]);
-  console.log(selectedSlot,customerId,authToken)
+  console.log(selectedSlot, customerId, authToken)
   // 4. Handle Final Booking
   const handleBooking = async () => {
     if (!selectedSlot || !customerId || !authToken) {
       alert("Please login to proceed with the booking.");
       return;
     }
- 
+
     setIsSubmitting(true);
 
     try {
@@ -176,7 +176,7 @@ export default function BookingFlowInline({ venue, services, totalPrice, staff, 
         });
 
         if (eligibleStaff.length === 0) throw new Error("No staff available for this slot.");
-        
+
         // Pick Random
         const randomIdx = Math.floor(Math.random() * eligibleStaff.length);
         finalEmpId = eligibleStaff[randomIdx].empid;
@@ -197,12 +197,12 @@ export default function BookingFlowInline({ venue, services, totalPrice, staff, 
         paymentId: "PAY-" + Math.random().toString(36).substring(7).toUpperCase()
       };
 
-      await axios.post(`http://localhost:3001/api/customer/appointments/book`, payload, {
+      await axios.post(`${BASE_URL}/customer/appointments/book`, payload, {
         headers: { Authorization: `Bearer ${authToken}` }
       });
 
       alert("Appointment successfully booked!");
-      window.location.reload(); 
+      window.location.reload();
     } catch (err: any) {
       alert(err.response?.data?.message || "Booking failed. Slot might be unavailable.");
     } finally {
@@ -213,7 +213,7 @@ export default function BookingFlowInline({ venue, services, totalPrice, staff, 
   return (
     <div className="mt-8 bg-white border border-borderSoft rounded-3xl p-8 shadow-card">
       <h2 className="text-2xl font-serif font-bold text-cocoa mb-6">Complete Your Booking</h2>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
         <div className="space-y-8">
           {/* 1. Select Date */}
@@ -261,20 +261,19 @@ export default function BookingFlowInline({ venue, services, totalPrice, staff, 
               const isBooked = slot.status === 'booked' || slot.status === 'mismatch';
               const isSelected = selectedSlot === slot.time;
               return (
-                <button 
-                  key={slot.time} 
-                  disabled={isBooked} 
+                <button
+                  key={slot.time}
+                  disabled={isBooked}
                   onClick={() => setSelectedSlot(slot.time)}
-                  className={`relative py-4 rounded-2xl text-sm font-bold border transition-all ${
-                    slot.status === 'booked' ? 'bg-gray-400 border-transparent text-white/50 cursor-not-allowed' :
-                    slot.status === 'mismatch' ? 'bg-linen border-transparent text-taupe/20 cursor-not-allowed' : 
-                    isSelected ? 'bg-cocoa text-white border-cocoa shadow-md' : 'bg-white border-borderSoft text-cocoa hover:border-goldDark'
-                  }`}
+                  className={`relative py-4 rounded-2xl text-sm font-bold border transition-all ${slot.status === 'booked' ? 'bg-gray-400 border-transparent text-white/50 cursor-not-allowed' :
+                      slot.status === 'mismatch' ? 'bg-linen border-transparent text-taupe/20 cursor-not-allowed' :
+                        isSelected ? 'bg-cocoa text-white border-cocoa shadow-md' : 'bg-white border-borderSoft text-cocoa hover:border-goldDark'
+                    }`}
                 >
                   {slot.time}
                   {isBooked && (
                     <div className="absolute inset-0 flex items-center justify-center">
-                       {slot.status === 'mismatch' ? <Ban className="w-4 h-4 text-red-500/10" /> : <Clock className="w-4 h-4 text-white/20" />}
+                      {slot.status === 'mismatch' ? <Ban className="w-4 h-4 text-red-500/10" /> : <Clock className="w-4 h-4 text-white/20" />}
                     </div>
                   )}
                 </button>
@@ -282,8 +281,8 @@ export default function BookingFlowInline({ venue, services, totalPrice, staff, 
             })}
           </div>
           <div className="mt-6 flex justify-center gap-4 text-[10px] font-bold uppercase text-taupe/50">
-             <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-red-400/30"/> Booked</span>
-             <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-borderSoft"/> Available</span>
+            <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-red-400/30" /> Booked</span>
+            <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-borderSoft" /> Available</span>
           </div>
         </div>
       </div>

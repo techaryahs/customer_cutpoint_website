@@ -156,7 +156,7 @@ export default function BookingFlowInline({ venue, services, totalPrice, onChang
   const [submitState, setSubmitState] = useState<'idle' | 'login_required' | 'success'>('idle');
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
   // ---------- HANDLE SUBMIT (PUT IT HERE) ----------
   const handleSubmit = async (e: FormEvent) => {
   e.preventDefault();
@@ -227,7 +227,7 @@ export default function BookingFlowInline({ venue, services, totalPrice, onChang
     };
 
     const res = await fetch(
-      'http://localhost:3001/api/customer/appointments/book',
+      `${BASE_URL}/customer/appointments/book`,
       {
         method: 'POST',
         headers: {

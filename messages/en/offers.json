@@ -2,7 +2,7 @@
   "Discovery": {
     "loading": "Curating the best deals for you...",
     "exclusive": "Exclusive Rewards",
-    "title": "Limited Time {flashDeals}",
+    "title": "Limited Time <flashDeals>Flash Deals</flashDeals>",
     "flashDeals": "Flash Deals",
     "description": "Discover premium grooming experiences at unbeatable prices. Handpicked offers from top salons in your area.",
     "active_region": "Active Region",

@@ -25,7 +25,8 @@ export default function CustomerFavoritesPage() {
 
     try {
       const user = JSON.parse(userData);
-      const res = await axios.get(`${BACKEND_URL}/customer/favorites/${user.uid}`, {
+      const baseUrl = `${BACKEND_URL}${BACKEND_URL.endsWith('/api') ? '' : '/api'}`;
+      const res = await axios.get(`${baseUrl}/customer/favorites/${user.uid}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setFavorites(res.data);
@@ -75,7 +76,7 @@ export default function CustomerFavoritesPage() {
       {/* FAVORITES GRID */}
       <AnimatePresence mode="wait">
         {favorites.length > 0 ? (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
@@ -86,13 +87,13 @@ export default function CustomerFavoritesPage() {
           </motion.div>
         ) : (
           /* EMPTY STATE */
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="bg-white p-12 md:p-20 rounded-[3rem] border border-borderSoft text-center shadow-soft relative overflow-hidden"
           >
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-linen rounded-full blur-3xl opacity-50 -mt-32" />
-            
+
             <div className="relative z-10 flex flex-col items-center">
               <div className="w-20 h-20 bg-linen rounded-3xl flex items-center justify-center mb-8 rotate-12">
                 <Heart className="w-10 h-10 text-taupe/20" />

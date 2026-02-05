@@ -19,7 +19,7 @@ type Props = {
   viewAllHref: string;
 };
 
-const BACKEND_URL = 'http://localhost:3001';
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
 export default function HorizontalBusinessSection({
   title,
@@ -54,7 +54,7 @@ export default function HorizontalBusinessSection({
             const normalizedImage = place.image
               ? place.image.startsWith('http')
                 ? place.image
-                : `${BACKEND_URL}${place.image}`
+                : `${BACKEND_URL.replace(/\/api$/, '').replace(/\/$/, '')}/${place.image.replace(/^\//, '')}`
               : '/placeholder.jpg';
 
             return (

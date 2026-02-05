@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Filter, Search, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -28,24 +28,33 @@ type Place = {
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-export default function SearchPage() {
+function SearchPageContent() {
   const searchParams = useSearchParams();
   const t = useTranslations('Search');
   const router = useRouter();
 
   const category = (searchParams.get('cat') ?? 'all').toLowerCase();
   const query = searchParams.get('q') ?? '';
-  const loc = searchParams.get('loc') ?? (typeof window !== 'undefined' ? localStorage.getItem('cutpoint_location') : null) ?? 'Mumbai';
-
+  const [loc, setLoc] = useState('Mumbai');
+  const [mounted, setMounted] = useState(false);
   const [places, setPlaces] = useState<Place[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setMounted(true);
+    const stored = localStorage.getItem('glowbiz_location');
+    const initialLoc = searchParams.get('loc') ?? stored ?? 'Mumbai';
+    setLoc(initialLoc);
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (!mounted) return;
     const fetchPlaces = async () => {
       setLoading(true);
       try {
         const params = new URLSearchParams({ loc, q: query });
-        const res = await fetch(`${BACKEND_URL}/customer/businesses?${params}`, { cache: 'no-store' });
+        const apiPath = `${BACKEND_URL}${BACKEND_URL.endsWith('/api') ? '' : '/api'}/customer/businesses?${params}`;
+        const res = await fetch(apiPath, { cache: 'no-store' });
         if (!res.ok) throw new Error('Failed to fetch businesses');
         const data = await res.json();
 
@@ -60,7 +69,7 @@ export default function SearchPage() {
       }
     };
     fetchPlaces();
-  }, [loc, query]);
+  }, [loc, query, mounted]);
 
   const filteredPlaces = useMemo(() => {
     const nQuery = query.trim().toLowerCase();
@@ -88,7 +97,7 @@ export default function SearchPage() {
   return (
     <div className="min-h-screen bg-[#FAF9F6] pt-28 pb-20">
       <div className="max-w-7xl mx-auto px-6">
-        
+
         {/* SEARCH HEADER */}
         <header className="mb-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -120,7 +129,7 @@ export default function SearchPage() {
         ) : (
           <>
             <AnimatePresence mode="popLayout">
-              <motion.div 
+              <motion.div
                 layout
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
               >
@@ -139,7 +148,7 @@ export default function SearchPage() {
             </AnimatePresence>
 
             {filteredPlaces.length === 0 && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="text-center py-24 bg-white rounded-[2rem] border border-dashed border-borderSoft"
@@ -163,5 +172,13 @@ export default function SearchPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#FAF9F6] pt-28 text-center text-taupe">Loading...</div>}>
+      <SearchPageContent />
+    </Suspense>
   );
 }

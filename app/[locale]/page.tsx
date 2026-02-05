@@ -27,7 +27,7 @@ type Place = {
   type?: "salon" | "spa";
 };
 
-const BACKEND_URL = "http://localhost:3001";
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 
 /* ===========================
@@ -38,13 +38,13 @@ function Hero() {
   const t = useTranslations('Home.Hero');
 
   const handleBooking = () => {
-  const location =
-    typeof window !== 'undefined'
-      ? localStorage.getItem('cutpoint_location') || 'Mumbai'
-      : 'Mumbai';
+    const location =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('glowbiz_location') || 'Mumbai'
+        : 'Mumbai';
 
-  router.push(`/search?cat=all&loc=${encodeURIComponent(location)}`);
-};
+    router.push(`/search?cat=all&loc=${encodeURIComponent(location)}`);
+  };
 
 
   return (
@@ -91,7 +91,7 @@ function Hero() {
             {t('book_now_btn')}
             <ChevronRight size={18} className="opacity-40 group-hover:translate-x-1 transition-transform" />
           </button>
-          
+
           <p className="mt-4 text-[10px] text-[#7a6a5e]/60 font-medium uppercase tracking-widest text-center">
             {t('booking_subtext')}
           </p>
@@ -157,7 +157,7 @@ function Services() {
               className="group block"
             >
               <div className="relative rounded-[2.5rem] overflow-hidden bg-white border border-[#a6865d]/10 shadow-[0_10px_40px_rgba(0,0,0,0.04)] hover:shadow-[0_30px_70px_rgba(166,134,93,0.2)] transition-all duration-700 hover:-translate-y-2">
-                
+
                 <div className="relative aspect-[16/10] overflow-hidden">
                   <Image
                     src={service.img}
@@ -326,7 +326,7 @@ function Newsletter() {
 //       try {
 //         const loc =
 //           typeof window !== 'undefined'
-//             ? localStorage.getItem('cutpoint_location') ?? 'Mumbai'
+//             ? localStorage.getItem('glowbiz_location') ?? 'Mumbai'
 //             : 'Mumbai';
 
 //         const res = await fetch(
@@ -383,46 +383,46 @@ export default function HomePage() {
   const t = useTranslations('Home.Sections');
   const [places, setPlaces] = useState<Place[]>([]);
 
-useEffect(() => {
-  const fetchHomeBusinesses = async () => {
-    try {
-      const loc =
-        typeof window !== "undefined"
-          ? localStorage.getItem("cutpoint_location") ?? "Mumbai"
-          : "Mumbai";
+  useEffect(() => {
+    const fetchHomeBusinesses = async () => {
+      try {
+        const loc =
+          typeof window !== "undefined"
+            ? localStorage.getItem("glowbiz_location") ?? "Mumbai"
+            : "Mumbai";
 
-      const res = await fetch(
-        `${BACKEND_URL}/api/customer/businesses?loc=${loc}`,
-        { cache: "no-store" }
-      );
+        const res = await fetch(
+          `${BACKEND_URL}${BACKEND_URL.endsWith('/api') ? '' : '/api'}/customer/businesses?loc=${loc}`,
+          { cache: "no-store" }
+        );
 
-      const data = await res.json();
+        const data = await res.json();
 
-      // ✅ MERGE SALONS + SPAS (CRITICAL FIX)
-      const allBusinesses = [
-        ...(Array.isArray(data?.salons) ? data.salons : []),
-        ...(Array.isArray(data?.spas) ? data.spas : []),
-      ];
+        // ✅ MERGE SALONS + SPAS (CRITICAL FIX)
+        const allBusinesses = [
+          ...(Array.isArray(data?.salons) ? data.salons : []),
+          ...(Array.isArray(data?.spas) ? data.spas : []),
+        ];
 
-      // ✅ NORMALIZE IMAGES
-      const normalized: Place[] = allBusinesses.map((item: any) => ({
-        ...item,
-        image: item.image
-          ? item.image.startsWith("http")
-            ? item.image
-            : `${BACKEND_URL}${item.image}`
-          : "/placeholder.jpg",
-      }));
+        // ✅ NORMALIZE IMAGES
+        const normalized: Place[] = allBusinesses.map((item: any) => ({
+          ...item,
+          image: item.image
+            ? item.image.startsWith("http")
+              ? item.image
+              : `${BACKEND_URL.replace(/\/api$/, '').replace(/\/$/, '')}/${item.image.replace(/^\//, '')}`
+            : "/placeholder.jpg",
+        }));
 
-      setPlaces(normalized);
-    } catch (err) {
-      console.error("HomePage fetch failed", err);
-      setPlaces([]);
-    }
-  };
+        setPlaces(normalized);
+      } catch (err) {
+        console.error("HomePage fetch failed", err);
+        setPlaces([]);
+      }
+    };
 
-  fetchHomeBusinesses();
-}, []);
+    fetchHomeBusinesses();
+  }, []);
 
 
   // ✅ FILTER BY TYPE
@@ -441,7 +441,7 @@ useEffect(() => {
           viewAllHref="/search?cat=hair"
         />
       )}
-            {/* 🧖 SPA SECTION */}
+      {/* 🧖 SPA SECTION */}
       {spas.length > 0 && (
         <HorizontalBusinessSection
           title={t('spas_near_you')}

@@ -35,7 +35,7 @@ type NavLink = {
 
 // --- CONSTANTS ---
 const CITIES_EN = ["Mumbai", "Delhi NCR", "Bangalore", "Pune", "Hyderabad", "Chennai"];
-const LOCATION_STORAGE_KEY = 'cutpoint_location';
+const LOCATION_STORAGE_KEY = 'glowbiz_location';
 
 export default function Header() {
   const router = useRouter();
@@ -55,23 +55,9 @@ export default function Header() {
   const [isMobileLocationExpanded, setIsMobileLocationExpanded] = useState(false);
   const [fullAddress, setFullAddress] = useState<string | null>(null);
 
-  const [location, setLocation] = useState(() => {
-    if (typeof window === 'undefined') return 'Mumbai';
-    const stored = localStorage.getItem(LOCATION_STORAGE_KEY);
-    return stored && CITIES_EN.includes(stored) ? stored : 'Mumbai';
-  });
-  const [user, setUser] = useState<User | null>(() => {
-    if (typeof window === 'undefined') return null;
-    try {
-      const raw = localStorage.getItem('salon_user');
-      if (!raw || raw === 'undefined') return null;
-      return JSON.parse(raw) as User;
-    } catch {
-      localStorage.removeItem('salon_user');
-      localStorage.removeItem('salon_token');
-      return null;
-    }
-  });
+  const [location, setLocation] = useState('Mumbai');
+  const [user, setUser] = useState<User | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   // --- REFS ---
   const profileRef = useRef<HTMLDivElement>(null);
@@ -130,17 +116,29 @@ export default function Header() {
 
   // --- EFFECTS ---
   useEffect(() => {
+    setMounted(true);
+
+    // Initialize state from localStorage
+    const storedLocation = localStorage.getItem(LOCATION_STORAGE_KEY);
+    if (storedLocation && CITIES_EN.includes(storedLocation)) {
+      setLocation(storedLocation);
+    } else {
+      fetchLiveLocation();
+    }
+
+    try {
+      const raw = localStorage.getItem('salon_user');
+      if (raw && raw !== 'undefined') {
+        setUser(JSON.parse(raw));
+      }
+    } catch (e) {
+      console.error("Failed to parse user", e);
+    }
+
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
 
     window.addEventListener('scroll', handleScroll);
     window.addEventListener('storage', syncUser);
-
-    if (typeof window !== 'undefined') {
-      const storedLocation = localStorage.getItem(LOCATION_STORAGE_KEY);
-      if (!storedLocation) {
-        fetchLiveLocation();
-      }
-    }
 
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as Node;
@@ -176,7 +174,7 @@ export default function Header() {
   const handleLocationSelect = (city: string) => {
     setLocation(city);
     localStorage.setItem(LOCATION_STORAGE_KEY, city);
-    window.dispatchEvent(new CustomEvent('cutpoint_location_change', { detail: city }));
+    window.dispatchEvent(new CustomEvent('glowbiz_location_change', { detail: city }));
     setIsLocationOpen(false);
     setIsMobileLocationExpanded(false);
     if (pathname === '/search') {
@@ -188,56 +186,56 @@ export default function Header() {
 
 
   const fetchLiveLocation = async () => {
-  if (!navigator.geolocation) return;
+    if (!navigator.geolocation) return;
 
-  navigator.geolocation.getCurrentPosition(
-    async (position) => {
-      const { latitude, longitude } = position.coords;
-      try {
-        const res = await fetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.NEXT_PUBLIC_MAP_API}`
-        );
-        const data = await res.json();
-        const primaryResult = data.results?.[0];
-        if (!primaryResult) return;
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        try {
+          const res = await fetch(
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.NEXT_PUBLIC_MAP_API}`
+          );
+          const data = await res.json();
+          const primaryResult = data.results?.[0];
+          if (!primaryResult) return;
 
-        const formattedAddress = primaryResult.formatted_address;
-        const components = primaryResult.address_components || [];
+          const formattedAddress = primaryResult.formatted_address;
+          const components = primaryResult.address_components || [];
 
-        const cityComponent =
-          components.find((c: any) => c.types.includes('locality')) ||
-          components.find((c: any) => c.types.includes('sublocality_level_1')) ||
-          components.find((c: any) => c.types.includes('administrative_area_level_2'));
+          const cityComponent =
+            components.find((c: any) => c.types.includes('locality')) ||
+            components.find((c: any) => c.types.includes('sublocality_level_1')) ||
+            components.find((c: any) => c.types.includes('administrative_area_level_2'));
 
-        if (!cityComponent) return;
+          if (!cityComponent) return;
 
-        const detectedCity = cityComponent.long_name;
-        const finalCity = detectedCity === 'Navi Mumbai' ? 'Mumbai' : detectedCity;
+          const detectedCity = cityComponent.long_name;
+          const finalCity = detectedCity === 'Navi Mumbai' ? 'Mumbai' : detectedCity;
 
-        setLocation(finalCity);
-        if (formattedAddress) {
-          setFullAddress(formattedAddress);
-          localStorage.setItem('cutpoint_full_address', formattedAddress);
+          setLocation(finalCity);
+          if (formattedAddress) {
+            setFullAddress(formattedAddress);
+            localStorage.setItem('glowbiz_full_address', formattedAddress);
+          }
+          localStorage.setItem(LOCATION_STORAGE_KEY, finalCity);
+          window.dispatchEvent(new CustomEvent('glowbiz_location_change', { detail: finalCity }));
+
+          if (pathname === '/search') {
+            const params = new URLSearchParams(Array.from(searchParams.entries()));
+            params.set('loc', finalCity);
+            router.push(`/search?${params.toString()}`);
+          }
+        } catch (error) {
+          console.error('❌ Geocoding API failed:', error);
         }
-        localStorage.setItem(LOCATION_STORAGE_KEY, finalCity);
-        window.dispatchEvent(new CustomEvent('cutpoint_location_change', { detail: finalCity }));
-
-        if (pathname === '/search') {
-          const params = new URLSearchParams(Array.from(searchParams.entries()));
-          params.set('loc', finalCity);
-          router.push(`/search?${params.toString()}`);
-        }
-      } catch (error) {
-        console.error('❌ Geocoding API failed:', error);
-      }
-    },
-    (error) => {
-      const fallbackCity = localStorage.getItem(LOCATION_STORAGE_KEY) || 'Mumbai';
-      setLocation(fallbackCity);
-    },
-    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-  );
-};
+      },
+      (error) => {
+        const fallbackCity = localStorage.getItem(LOCATION_STORAGE_KEY) || 'Mumbai';
+        setLocation(fallbackCity);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
 
   const isHome = pathname === '/';
   const headerClasses = `fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isHome && !isScrolled
@@ -341,7 +339,9 @@ export default function Header() {
             <span>{t('book_now')}</span>
           </Link>
 
-          {user ? (
+          {!mounted ? (
+            <div className="w-9 h-9" />
+          ) : user ? (
             <div className="relative" ref={profileRef}>
               <div className="flex items-center gap-3">
                 <Link href="/customer/favorites" className="hidden md:block hover:text-red-500 transition-colors text-cocoa" title="Saved Items">
@@ -398,8 +398,8 @@ export default function Header() {
       {isMobileOpen && (
         <div className="lg:hidden bg-white/95 backdrop-blur-xl border-t border-gray-100 p-4 shadow-2xl absolute w-full h-[calc(100vh-60px)] overflow-y-auto">
           <div className="mb-4 space-y-3">
-             {/* Mobile Locale Selector */}
-             <div className="flex gap-2">
+            {/* Mobile Locale Selector */}
+            <div className="flex gap-2">
               {['en', 'hi', 'mr'].map((l) => (
                 <button
                   key={l}
@@ -461,7 +461,7 @@ export default function Header() {
               {t('book_now')}
             </Link>
 
-            {!user && (
+            {mounted && !user && (
               <div className="grid grid-cols-2 gap-3">
                 <Link href="/auth/login" onClick={() => setIsMobileOpen(false)} className="text-center py-2.5 border border-borderSoft rounded-xl font-bold text-sm text-cocoa">
                   {t('log_in')}

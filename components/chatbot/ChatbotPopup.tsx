@@ -55,7 +55,7 @@ export default function ChatbotPopup({ onClose }: { onClose: () => void }) {
       {
         sender: "bot",
         text:
-          "👋 Hi! I'm GlowBizz Concierge ✨\n\nI can help you find the perfect salon!",
+          "👋 Hi! I'm GlowBiz Concierge ✨\n\nI can help you find the perfect salon!",
       },
     ]);
 
