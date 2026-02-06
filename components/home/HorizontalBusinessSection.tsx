@@ -55,7 +55,7 @@ export default function HorizontalBusinessSection({
               ? place.image.startsWith('http')
                 ? place.image
                 : `${BACKEND_URL.replace(/\/api$/, '').replace(/\/$/, '')}/${place.image.replace(/^\//, '')}`
-              : '/placeholder.jpg';
+              : 'https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800';
 
             return (
               <div

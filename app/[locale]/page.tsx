@@ -111,14 +111,18 @@ export default function HomePage() {
 
         const allBusinesses = Array.from(businessMap.values());
 
-        const normalized: Place[] = allBusinesses.map((item: any) => ({
-          ...item,
-          image: item.image
-            ? item.image.startsWith("http")
+        const normalized: Place[] = allBusinesses.map((item: any) => {
+          const baseUrl = BACKEND_URL.replace(/\/api$/, '').replace(/\/$/, '');
+          let finalImage = "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800";
+
+          if (item.image) {
+            finalImage = item.image.startsWith("http")
               ? item.image
-              : `${BACKEND_URL.replace(/\/api$/, '').replace(/\/$/, '')}/${item.image.replace(/^\//, '')}`
-            : "/placeholder.jpg",
-        }));
+              : `${baseUrl}/${item.image.replace(/^\//, '')}`;
+          }
+
+          return { ...item, image: finalImage };
+        });
 
         setPlaces(normalized);
       } catch (err) {
@@ -136,7 +140,7 @@ export default function HomePage() {
   return (
     <main className="overflow-x-hidden selection:bg-[#b3936a]/20 selection:text-[#4a3728]">
       <Hero />
-    
+
 
       {/* 📍 NEARBY DISCOVERY SECTION */}
       <section className="bg-[#fcfaf8] py-24 border-y border-[#a6865d]/5">
@@ -230,7 +234,7 @@ export default function HomePage() {
                     className="group bg-white p-4 rounded-3xl border border-[#a6865d]/5 hover:border-[#a6865d]/20 hover:shadow-lg transition-all flex gap-4"
                   >
                     <div className="relative w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0">
-                      <Image src={p.image || "/placeholder.jpg"} alt={p.name} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
+                      <Image src={p.image || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"} alt={p.name} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
                     </div>
                     <div className="flex flex-col justify-center">
                       <h4 className="font-serif text-lg text-[#5c4a44] group-hover:text-[#a6865d] transition-colors line-clamp-1">{p.name}</h4>
@@ -254,7 +258,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
- 
+
       {/* 💇 SALON SECTION */}
       {salons.length > 0 && (
         <HorizontalBusinessSection
