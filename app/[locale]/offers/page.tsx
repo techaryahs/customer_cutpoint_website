@@ -83,7 +83,7 @@ export default function OffersDiscoveryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF9F6] pt-32 pb-20">
+    <div className="min-h-screen bg-[#FAF9F6] pb-20">
       <div className="max-w-7xl mx-auto px-6">
 
         {/* HERO SECTION */}
@@ -123,7 +123,7 @@ export default function OffersDiscoveryPage() {
         </section>
 
         {/* FILTERS & SEARCH */}
-        <section className="mb-12 flex flex-col lg:flex-row gap-6 items-center justify-between sticky top-28 z-40 bg-[#FAF9F6]/80 backdrop-blur-xl p-4 rounded-[2rem] border border-borderSoft shadow-soft">
+        <section className="mb-12 flex flex-col lg:flex-row gap-6 items-center justify-between bg-[#FAF9F6] p-4 rounded-[2rem] border border-borderSoft shadow-soft transition-all duration-300">
           <div className="relative w-full lg:max-w-md">
             <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-taupe/40" size={20} />
             <input
@@ -150,8 +150,8 @@ export default function OffersDiscoveryPage() {
                 key={btn.value}
                 onClick={() => setValidDays(btn.value as any)}
                 className={`px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shrink-0 ${validDays === btn.value as any
-                    ? 'bg-cocoa text-sand shadow-lg'
-                    : 'bg-white text-taupe border border-borderSoft hover:border-gold/30'
+                  ? 'bg-cocoa text-sand shadow-lg'
+                  : 'bg-white text-taupe border border-borderSoft hover:border-gold/30'
                   }`}
               >
                 {btn.label}
@@ -202,7 +202,9 @@ export default function OffersDiscoveryPage() {
 
 function OfferCard({ offer }: { offer: any }) {
   const t = useTranslations('Card');
-  const isAllServices = offer.serviceId === 'all';
+  const isAllServices = offer.serviceNames?.length
+    ? offer.serviceNames
+    : ['All Services'];
   const expiresDate = new Date(offer.validUntil);
   const now = new Date();
   const diffTime = expiresDate.getTime() - now.getTime();
@@ -250,7 +252,11 @@ function OfferCard({ offer }: { offer: any }) {
         <div className="space-y-4">
           <div>
             <div className="flex items-center gap-2 text-[9px] font-black text-goldDark uppercase tracking-widest mb-1.5">
-              <Zap className="w-3 h-3 fill-current" /> {isAllServices ? t('storewide') : t('service_special')}
+              <Zap className="w-3 h-3 fill-current" /> {isAllServices.length > 1
+                ? 'Multi-Service Offer'
+                : isAllServices[0] === 'All Services'
+                  ? 'Storewide Offer'
+                  : 'Service Special'}
             </div>
             <h3 className="text-2xl font-serif font-bold text-cocoa leading-tight">{offer.title}</h3>
           </div>
@@ -258,7 +264,28 @@ function OfferCard({ offer }: { offer: any }) {
           <p className="text-sm text-taupe font-medium opacity-70 leading-relaxed line-clamp-2">
             {offer.description}
           </p>
+        <div className="flex flex-col gap-2.5">
+  {/* Label with a subtle divider */}
+  <div className="flex items-center gap-2">
+    <span className="text-[10px] font-bold text-cocoa/50 uppercase tracking-widest whitespace-nowrap">
+      Available Services:
+    </span>  </div>
 
+  {/* Tags Container */}
+  <div className="flex flex-wrap gap-1.5">
+    {(offer.serviceNames?.length ? offer.serviceNames : ['All Services']).map(
+      (name: string, i: number) => (
+        <span
+          key={`${offer.offerId}-${i}`}
+          className="inline-flex items-center bg-white text-goldDark px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wide border border-gold/20 shadow-sm hover:border-gold/40 transition-colors"
+        >
+          <span className="w-1 h-1 bg-gold rounded-full mr-1.5 opacity-70" />
+          {name}
+        </span>
+      )
+    )}
+  </div>
+</div>
           <div className="flex flex-wrap gap-2">
             <span className="bg-linen px-3 py-1.5 rounded-xl text-[9px] font-bold text-cocoa border border-cocoa/5">
               {t('available_at', { salon: offer.salonName })}
