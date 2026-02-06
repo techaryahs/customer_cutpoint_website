@@ -58,8 +58,14 @@ export default function SalonCard({ kind, item }: SalonCardProps) {
           headers: { Authorization: `Bearer ${token}` }
         });
         setIsFavorite(res.data.some((f: any) => f.id === item.id));
-      } catch (err) {
-        console.error("Check favorite error", err);
+      } catch (err: any) {
+        if (err.response?.status === 401) {
+          // Token is likely expired or invalid
+          localStorage.removeItem('salon_token');
+          localStorage.removeItem('salon_user');
+        } else {
+          console.error("Check favorite error", err);
+        }
       }
     };
     checkFav();
@@ -78,7 +84,7 @@ export default function SalonCard({ kind, item }: SalonCardProps) {
     setLoadingFav(true);
     try {
       const user = JSON.parse(userData);
-      const res = await axios.post(`${BACKEND_URL}/customer/favorites/toggle`, 
+      const res = await axios.post(`${BACKEND_URL}/customer/favorites/toggle`,
         { type: kind, placeId: item.id },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -126,7 +132,7 @@ export default function SalonCard({ kind, item }: SalonCardProps) {
         </div>
 
         <div className="absolute top-3 right-3 flex items-center gap-1.5">
-          <button 
+          <button
             onClick={toggleFavorite}
             disabled={loadingFav}
             className="bg-white/90 backdrop-blur-md p-2 rounded-xl shadow-lg border border-white/20 hover:scale-110 active:scale-95 transition-all group/heart z-10"
@@ -163,8 +169,8 @@ export default function SalonCard({ kind, item }: SalonCardProps) {
 
         <div className="pt-4 border-t border-linen flex items-center justify-between">
           <div className="flex flex-col">
-             <span className="text-[8px] font-black text-taupe/30 uppercase tracking-widest">Starting from</span>
-             <span className="text-base font-serif font-bold text-cocoa">₹299</span>
+            <span className="text-[8px] font-black text-taupe/30 uppercase tracking-widest">Starting from</span>
+            <span className="text-base font-serif font-bold text-cocoa">₹299</span>
           </div>
           <button
             type="button"
