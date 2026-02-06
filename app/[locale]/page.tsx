@@ -493,7 +493,7 @@ export default function HomePage() {
                 <MapPin size={18} className="text-[#a6865d]" />
                 <span className="text-[#a6865d] text-xs uppercase tracking-[0.3em] font-bold">Discovery</span>
               </div>
-              <h2 className="font-serif text-4xl text-[#5c4a44]">Nearby <span className="italic">Sanctuaries</span></h2>
+              <h2 className="font-serif text-4xl text-[#5c4a44]">Nearby <span className="italic">Salons & Spas</span></h2>
             </div>
 
             <div className="flex items-center gap-4 bg-white p-2 rounded-2xl border border-[#a6865d]/10 shadow-sm">
