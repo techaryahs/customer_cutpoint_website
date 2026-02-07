@@ -1,15 +1,17 @@
 {
-  "title": "ट्रेंड्स",
-  "subtitle": "आपके पास के शीर्ष स्टाइलिस्टों से ट्रेंडिंग स्टाइल।",
-  "book_look": "यह लुक बुक करें",
-  "styles": {
-    "textured_bob": "टेक्चर्ड बॉब",
-    "classic_fade": "क्लासिक फेड",
-    "copper_balayage": "कॉपर बाल्याज",
-    "bridal_glow": "ब्राइडल ग्लो",
-    "gel_extensions": "जेल एक्सटेंशन",
-    "keratin_smooth": "केराटिन स्मूथ",
-    "natural_curls": "नेचुरल कर्ल्स",
-    "spa_day": "स्पा डे"
+  "trends": {
+    "title": "ट्रेंड्स",
+    "subtitle": "आपके पास के शीर्ष स्टाइलिस्टों से ट्रेंडिंग स्टाइल।",
+    "book_look": "यह लुक बुक करें",
+    "styles": {
+      "textured_bob": "टेक्चर्ड बॉब",
+      "classic_fade": "क्लासिक फेड",
+      "copper_balayage": "कॉपर बाल्याज",
+      "bridal_glow": "ब्राइडल ग्लो",
+      "gel_extensions": "जेल एक्सटेंशन",
+      "keratin_smooth": "केराटिन स्मूथ",
+      "natural_curls": "नेचुरल कर्ल्स",
+      "spa_day": "स्पा डे"
+    }
   }
 }

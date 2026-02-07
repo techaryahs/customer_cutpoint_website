@@ -1,15 +1,17 @@
 {
-  "title": "Trends",
-  "subtitle": "Trending styles from top stylists near you.",
-  "book_look": "Book This Look",
-  "styles": {
-    "textured_bob": "Textured Bob",
-    "classic_fade": "Classic Fade",
-    "copper_balayage": "Copper Balayage",
-    "bridal_glow": "Bridal Glow",
-    "gel_extensions": "Gel Extensions",
-    "keratin_smooth": "Keratin Smooth",
-    "natural_curls": "Natural Curls",
-    "spa_day": "Spa Day"
+  "trends": {
+    "title": "Trends",
+    "subtitle": "Trending styles from top stylists near you.",
+    "book_look": "Book This Look",
+    "styles": {
+      "textured_bob": "Textured Bob",
+      "classic_fade": "Classic Fade",
+      "copper_balayage": "Copper Balayage",
+      "bridal_glow": "Bridal Glow",
+      "gel_extensions": "Gel Extensions",
+      "keratin_smooth": "Keratin Smooth",
+      "natural_curls": "Natural Curls",
+      "spa_day": "Spa Day"
+    }
   }
 }
