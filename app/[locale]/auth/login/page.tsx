@@ -61,6 +61,12 @@ export default function LoginCustomer() {
 
       const data = await res.json();
 
+      // Handle OTP Requirement
+      if (res.status === 403 && data.requiresOtp && data.uid) {
+        router.push(`/auth/otp-verify?uid=${data.uid}&role=customer`);
+        return;
+      }
+
       if (!res.ok) {
         throw new Error(data.error || data.message || t('error_failed'));
       }

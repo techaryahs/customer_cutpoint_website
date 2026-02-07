@@ -58,6 +58,12 @@ export default function RegisterCustomer() {
       const data = res.data;
       if (!data) throw new Error(t('error_failed'));
 
+      if (data.requiresOtp) {
+        // Redirect to OTP verification
+        router.push(`/auth/otp-verify?uid=${data.uid}&role=customer`);
+        return;
+      }
+
       // Save Data
       localStorage.setItem('salon_token', data.token);
       localStorage.setItem('salon_user', JSON.stringify(data.user));
@@ -70,7 +76,7 @@ export default function RegisterCustomer() {
       // ✅ FULL RELOAD TO SYNC EVERYTHING
       window.location.href = locale === 'en' ? '/' : `/${locale}`;
     } catch (err: any) {
-      setError(err.response?.data?.message || err.message || t('error_failed'));
+      setError(err.response?.data?.error || err.response?.data?.message || err.message || t('error_failed'));
     } finally {
       setLoading(false);
     }
