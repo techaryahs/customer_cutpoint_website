@@ -1,11 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Bot } from "lucide-react";
 import ChatbotPopup from "./ChatbotPopup";
 
 export default function ChatbotWidget() {
   const [open, setOpen] = useState(false);
+  
+  useEffect(() => {
+    // This is the "Ear" that listens for the click from the settings page
+    const handleTrigger = () => {
+      console.log("Signal received! Opening chat..."); // Check your F12 console for this
+      setOpen(true);
+    };
+
+    window.addEventListener("open-glowbiz-chat", handleTrigger);
+    return () => window.removeEventListener("open-glowbiz-chat", handleTrigger);
+  }, []);
 
   return (
     <>

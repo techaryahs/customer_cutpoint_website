@@ -38,6 +38,7 @@ export default function ChatbotPopup({ onClose }: { onClose: () => void }) {
   const [sessionId] = useState("session-" + Date.now());
   const [currentSalon, setCurrentSalon] = useState<string | null>(null);
   const [awaitingCity, setAwaitingCity] = useState(false);
+  const [isOpen, setIsOpen] = useState(false); // This controls if the chat is open
 
   /* ================= AUTO SCROLL ================= */
 
@@ -49,6 +50,12 @@ export default function ChatbotPopup({ onClose }: { onClose: () => void }) {
   }, [messages, salons, services]);
 
   /* ================= INIT ================= */
+useEffect(() => {
+    const handleOpen = () => setIsOpen(true); // Assuming 'setIsOpen' is your state
+    window.addEventListener('open-glowbiz-chat', handleOpen);
+    return () => window.removeEventListener('open-glowbiz-chat', handleOpen);
+}, []);
+
 
   useEffect(() => {
     setMessages([

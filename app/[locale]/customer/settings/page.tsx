@@ -1,28 +1,18 @@
 'use client';
 
+import SettingsPhaseOne from './SettingsPhaseOne';
+import SettingsPhaseTwo from './SettingsPhaseTwo';
+import { Settings, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useRouter } from '@/app/routing';
-import { useTranslations } from 'next-intl';
 
-export default function CustomerSettingsPage() {
-  const router = useRouter();
-  const t = useTranslations('Settings');
+export default function SettingsPage() {
 
-  const [profile, setProfile] = useState({
-    name: '',
-    email: '',
-    phone: '',
-  });
+  const [userName, setUserName] = useState('Your Account'); // Fallback text
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-
-  /* ---------------- FETCH PROFILE ---------------- */
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchUserName = async () => {
       try {
-        const token = localStorage.getItem('salon_token');
+        const token = localStorage.getItem("salon_token");
         if (!token) return;
 
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/dashboard`, {
@@ -30,196 +20,93 @@ export default function CustomerSettingsPage() {
             Authorization: `Bearer ${token}`,
           },
         });
-
+        
         const data = await res.json();
-
-        if (data?.profile) {
-          setProfile({
-            name: data.profile.name || '',
-            email: data.profile.email || '',
-            phone: data.profile.phone || '',
-          });
+        
+        if (data?.profile?.name) {
+          // Takes only the first name if you want it clean, or just data.profile.name
+          const firstName = data.profile.name.split(' ')[0];
+          setUserName(firstName);
         }
-      } catch (err) {
-        console.error('Failed to fetch profile', err);
-      } finally {
-        setLoading(false);
+      } catch (error) {
+        console.error("🔴 Error fetching name for label:", error);
       }
     };
 
-    fetchProfile();
+    fetchUserName();
   }, []);
-
-  /* ---------------- HANDLERS ---------------- */
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setProfile(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
-  };
-
-  const handleSave = async () => {
-    try {
-      setSaving(true);
-
-      const token = localStorage.getItem('salon_token');
-      if (!token) return;
-
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/dashboard/profile`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(profile),
-        }
-      );
-
-      if (!res.ok) {
-        throw new Error(t('update_failed'));
-      }
-
-      setIsEditing(false);
-    } catch (err) {
-      console.error('Profile update error', err);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleLogout = () => {
-    document.cookie =
-      'salon_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
-    localStorage.clear();
-    router.replace('/auth/login');
-  };
-
-  /* ---------------- UI ---------------- */
-  if (loading) {
-    return (
-      <section className="max-w-5xl py-20 text-center text-[#7a6a5e]">
-        {t('loading')}
-      </section>
-    );
-  }
-
+  
   return (
-    <section className="max-w-5xl">
-      {/* HEADER */}
-      <div className="flex items-center justify-between mb-10">
-        <h1 className="text-3xl font-semibold text-[#4a3728]">
-          {t('title')}
-        </h1>
-
-        {!isEditing ? (
-          <button
-            onClick={() => setIsEditing(true)}
-            className="px-6 py-3 rounded-xl border font-semibold hover:bg-[#FAF7F4]"
-          >
-            {t('edit_profile')}
-          </button>
-        ) : (
-          <div className="flex gap-3">
-            <button
-              onClick={() => setIsEditing(false)}
-              className="px-6 py-3 rounded-xl border font-semibold hover:bg-[#FAF7F4]"
-            >
-              {t('cancel')}
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="px-6 py-3 rounded-xl bg-[#4a3728] text-white font-semibold hover:opacity-90 disabled:opacity-60"
-            >
-              {saving ? t('saving') : t('save_changes')}
-            </button>
+    <section className="min-h-screen bg-gradient-to-br from-cream via-white to-cream/50 dark:from-charcoal dark:via-charcoal-light dark:to-charcoal">
+      {/* Header Section - Z Pattern Start (Top Left to Right) */}
+      <div className="max-w-7xl mx-auto px-6 pt-8 pb-6">
+        <div className="flex items-start justify-between mb-8">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-gold to-gold/80 flex items-center justify-center shadow-lg">
+                <Settings className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-charcoal dark:text-cream">Settings</h1>
+                <p className="text-sm text-charcoal/60 dark:text-cream/60">Manage your preferences and account</p>
+              </div>
+            </div>
           </div>
-        )}
-      </div>
 
-      {/* PROFILE INFO */}
-      <div className="bg-white rounded-3xl border border-gray-200 p-8 mb-10">
-        <h2 className="text-lg font-semibold text-[#4a3728] mb-6">
-          {t('profile_info')}
-        </h2>
+          {/* User Badge - Top Right */}
+          <div className="hidden md:flex items-center gap-3 bg-white dark:bg-cocoa px-4 py-3 rounded-2xl shadow-soft border border-gold/10">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gold/20 to-gold/10 flex items-center justify-center">
+              <User className="w-5 h-5 text-gold" />
+            </div>
+            <div className="text-right">
+              <p className="text-sm font-semibold text-gold tracking-wide uppercase">
+      {userName}
+    </p>
+              <p className="text-xs text-charcoal/50 dark:text-cream/50">Premium Member</p>
+            </div>
+          </div>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Field
-            label={t('full_name')}
-            name="name"
-            value={profile.name}
-            onChange={handleChange}
-            disabled={!isEditing}
-          />
-
-          <Field
-            label={t('email_addr')}
-            name="email"
-            value={profile.email}
-            onChange={handleChange}
-            disabled={!isEditing}
-          />
-
-          <Field
-            label={t('phone_num')}
-            name="phone"
-            value={profile.phone}
-            onChange={handleChange}
-            disabled={!isEditing}
-          />
+        {/* Divider with Accent */}
+        <div className="relative mb-8">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-charcoal/10 dark:border-cream/10"></div>
+          </div>
+          <div className="relative flex justify-center">
+            <span className="bg-gradient-to-br from-cream via-white to-cream/50 dark:from-charcoal dark:via-charcoal-light dark:to-charcoal px-4">
+              <div className="w-2 h-2 rounded-full bg-gold"></div>
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* LOGOUT */}
-      <div className="bg-white rounded-3xl border border-red-200 p-8">
-        <h2 className="text-lg font-semibold text-red-600 mb-4">
-          {t('logout_title')}
-        </h2>
+      {/* Main Content - Z Pattern Flow */}
+      <div className="max-w-7xl mx-auto px-6 pb-12">
+        {/* Grid Layout for Z/F Pattern */}
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Left Column - Primary Settings (Phase One) */}
+          <div className="lg:col-span-2 space-y-6">
+            <SettingsPhaseOne />
+          </div>
 
-        <button
-          onClick={handleLogout}
-          className="px-6 py-3 rounded-xl bg-red-600 text-white font-semibold hover:opacity-90"
-        >
-          {t('logout_btn')}
-        </button>
+          {/* Right Column - Secondary Settings (Phase Two) */}
+          <div className="lg:col-span-1 space-y-6">
+            <SettingsPhaseTwo />
+          </div>
+        </div>
+
+        {/* Footer Section - Z Pattern End (Bottom) */}
+        <div className="mt-12 pt-8 border-t border-charcoal/10 dark:border-cream/10">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-charcoal/50 dark:text-cream/50">
+            <p>© 2024 Salon App. All rights reserved.</p>
+            <div className="flex items-center gap-6">
+              <a href="#" className="hover:text-gold transition-colors">Privacy</a>
+              <a href="#" className="hover:text-gold transition-colors">Terms</a>
+              <a href="#" className="hover:text-gold transition-colors">Support</a>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
-  );
-}
-
-/* ---------------- FIELD COMPONENT ---------------- */
-
-function Field({
-  label,
-  name,
-  value,
-  onChange,
-  disabled,
-}: {
-  label: string;
-  name: string;
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  disabled: boolean;
-}) {
-  return (
-    <div>
-      <label className="block text-sm text-[#7a6a5e] mb-2">
-        {label}
-      </label>
-      <input
-        name={name}
-        value={value}
-        onChange={onChange}
-        disabled={disabled}
-        className={`w-full px-4 py-3 rounded-xl border text-sm ${
-          disabled
-            ? 'bg-gray-50 text-gray-500'
-            : 'bg-white focus:outline-none focus:ring-2 focus:ring-[#4a3728]'
-        }`}
-      />
-    </div>
   );
 }

@@ -365,7 +365,7 @@ export default function Header() {
                     <p className="text-sm font-bold text-gray-900 truncate">{user.name}</p>
                     <p className="text-xs text-gray-500 capitalize">{t('customer')}</p>
                   </div>
-                  <Link href="/customer" className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors" onClick={() => setIsProfileOpen(false)}>
+                  <Link href="/customer/profile" className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors" onClick={() => setIsProfileOpen(false)}>
                     <LayoutGrid className="w-4 h-4" />
                     {t('dashboard')}
                   </Link>
